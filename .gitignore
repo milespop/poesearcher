@@ -108,3 +108,6 @@ pids
 poc-results/
 test-screenshots/
 debug-output/
+
+# Context files (documentation, analysis, temporary files)
+context/
