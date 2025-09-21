@@ -85,6 +85,7 @@ function parseItem(text) {
     rarity: '',
     itemClass: '',
     stats: [],
+    implicitStats: [],
     descriptionStats: []
   }
 
@@ -152,9 +153,22 @@ function parseItem(text) {
         continue
       }
 
+      // Skip rune stats - they contain "(rune)" suffix
+      if (line.includes('(rune)')) {
+        continue
+      }
+
       // This looks like a modifier stat (+ or - with numbers or %)
       if (line.match(/[\+\-]?\d+/) || line.includes('%')) {
-        parsed.stats.push(line)
+        // Check if it's an implicit stat
+        if (line.includes('(implicit)')) {
+          // Remove (implicit) suffix and add to implicit stats
+          const cleanLine = line.replace(/\s*\(implicit\)/, '')
+          parsed.implicitStats.push(cleanLine)
+        } else {
+          // Regular explicit stat
+          parsed.stats.push(line)
+        }
       }
     }
   }

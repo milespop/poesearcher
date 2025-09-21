@@ -12,13 +12,13 @@ class POESearcherInterface {
 
   // Initialize the interface
   async init() {
-    console.log('🎯 POE Searcher initializing...')
+    console.log('🎯 PoE2 Searcher initializing...')
 
     this.loadStyles()
     this.createInterface()
     this.setupEventHandlers()
 
-    console.log('✅ POE Searcher ready!')
+    console.log('✅ PoE2 Searcher ready!')
   }
 
   // Load clean custom styles
@@ -33,75 +33,63 @@ class POESearcherInterface {
         top: 2.5rem !important;
         right: 1rem !important;
         z-index: 2147483647 !important;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
       }
 
       .poe-fab {
-        width: 56px !important;
-        height: 56px !important;
-        border-radius: 50% !important;
-        background: #1976d2 !important;
+        width: 64px !important;
+        height: 64px !important;
+        border-radius: 16px !important;
+        background: #000000 !important;
         border: none !important;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.15) !important;
         cursor: pointer !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
-        transition: all 0.2s ease !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
         color: white !important;
-        font-size: 24px !important;
+        font-size: 20px !important;
+        backdrop-filter: blur(20px) !important;
       }
 
       .poe-fab:hover {
-        background: #1565c0 !important;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important;
-        transform: translateY(-1px) !important;
+        background: #1a1a1a !important;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.25) !important;
+        transform: translateY(-2px) scale(1.02) !important;
       }
 
       .poe-card {
-        width: 380px !important;
-        background: white !important;
-        border-radius: 16px !important;
-        box-shadow:
-          0 20px 25px -5px rgba(0, 0, 0, 0.1),
-          0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+        width: 400px !important;
+        background: #ffffff !important;
+        border-radius: 24px !important;
+        box-shadow: 0 32px 64px rgba(0, 0, 0, 0.12) !important;
         overflow: hidden !important;
         max-height: 85vh !important;
-        border: 1px solid rgba(0,0,0,0.05) !important;
-        backdrop-filter: blur(10px) !important;
+        border: 1px solid rgba(0,0,0,0.06) !important;
+        backdrop-filter: blur(40px) !important;
         position: relative !important;
       }
 
-      .poe-card::before {
-        content: '' !important;
-        position: absolute !important;
-        top: 0 !important;
-        left: 0 !important;
-        right: 0 !important;
-        height: 1px !important;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.8), transparent) !important;
-        z-index: 1 !important;
-      }
-
       .poe-header {
-        background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%) !important;
+        background: #000000 !important;
         color: white !important;
-        padding: 16px 20px !important;
+        padding: 24px 32px !important;
         display: flex !important;
         align-items: center !important;
         justify-content: space-between !important;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+        border-bottom: 1px solid rgba(255,255,255,0.08) !important;
       }
 
       .poe-header h3 {
         margin: 0 !important;
-        font-size: 20px !important;
-        font-weight: 600 !important;
+        font-size: 18px !important;
+        font-weight: 500 !important;
         display: flex !important;
         align-items: center !important;
         gap: 8px !important;
-        text-shadow: 0 1px 2px rgba(0,0,0,0.1) !important;
-        letter-spacing: 0.5px !important;
+        letter-spacing: -0.5px !important;
+        color: #ffffff !important;
       }
 
       .poe-close-btn {
@@ -125,76 +113,65 @@ class POESearcherInterface {
       }
 
       .poe-content {
-        padding: 32px !important;
-        max-height: 60vh !important;
+        padding: 24px !important;
+        max-height: 70vh !important;
         overflow-y: auto !important;
         position: relative !important;
         z-index: 2 !important;
-      }
-
-      .poe-content::before {
-        content: '' !important;
-        position: absolute !important;
-        top: 0 !important;
-        left: 32px !important;
-        right: 32px !important;
-        height: 1px !important;
-        background: linear-gradient(90deg, transparent, rgba(0,0,0,0.08), transparent) !important;
+        background: #ffffff !important;
       }
 
       .poe-textarea {
         width: 100% !important;
-        min-height: 140px !important;
-        padding: 20px !important;
-        border: 2px solid #e8eaed !important;
-        border-radius: 12px !important;
+        min-height: 100px !important;
+        padding: 16px 20px !important;
+        border: 1px solid rgba(0,0,0,0.12) !important;
+        border-radius: 16px !important;
         font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Consolas', monospace !important;
-        font-size: 13px !important;
+        font-size: 14px !important;
         line-height: 1.6 !important;
         resize: vertical !important;
         box-sizing: border-box !important;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-        background: #fbfcfd !important;
-        box-shadow: inset 0 1px 2px rgba(0,0,0,0.04) !important;
+        transition: all 0.2s ease !important;
+        background: #ffffff !important;
+        font-weight: 400 !important;
+        letter-spacing: -0.1px !important;
+        color: #1a1a1a !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04) !important;
         position: relative !important;
       }
 
       .poe-textarea:focus {
         outline: none !important;
-        border-color: #1976d2 !important;
-        background: white !important;
-        box-shadow:
-          inset 0 1px 2px rgba(0,0,0,0.04),
-          0 0 0 4px rgba(25, 118, 210, 0.08),
-          0 1px 3px rgba(0,0,0,0.1) !important;
-        transform: translateY(-1px) !important;
+        border-color: #000000 !important;
+        box-shadow: 0 0 0 3px rgba(0,0,0,0.08), 0 2px 12px rgba(0,0,0,0.08) !important;
       }
 
       .poe-textarea::placeholder {
-        color: #9aa0a6 !important;
-        font-style: italic !important;
+        color: #6b7280 !important;
+        font-style: normal !important;
+        font-weight: 400 !important;
       }
 
       .poe-search-btn {
         width: 100% !important;
         padding: 16px 24px !important;
-        background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%) !important;
+        background: #000000 !important;
         color: white !important;
         border: none !important;
-        border-radius: 8px !important;
+        border-radius: 16px !important;
         font-size: 16px !important;
-        font-weight: 600 !important;
+        font-weight: 500 !important;
         cursor: pointer !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
-        gap: 10px !important;
-        margin-top: 24px !important;
+        gap: 12px !important;
+        margin-top: 20px !important;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-        letter-spacing: 0.5px !important;
-        text-transform: uppercase !important;
-        box-shadow: 0 2px 8px rgba(25, 118, 210, 0.2) !important;
-        min-height: 48px !important;
+        letter-spacing: -0.25px !important;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12) !important;
+        min-height: 56px !important;
         position: relative !important;
         overflow: hidden !important;
       }
@@ -215,9 +192,9 @@ class POESearcherInterface {
       }
 
       .poe-search-btn:hover:not(:disabled) {
-        background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%) !important;
+        background: #1a1a1a !important;
         transform: translateY(-2px) !important;
-        box-shadow: 0 6px 20px rgba(25, 118, 210, 0.4) !important;
+        box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2) !important;
       }
 
       .poe-search-btn:active:not(:disabled) {
@@ -239,75 +216,73 @@ class POESearcherInterface {
       }
 
       .poe-status {
+        margin: 12px 0 !important;
         padding: 12px 16px !important;
-        border-radius: 6px !important;
-        margin: 20px 0 !important;
-        font-size: 13px !important;
-        font-weight: 500 !important;
-        border: 1px solid #e3f2fd !important;
-        background: #f8fbff !important;
-        color: #1565c0 !important;
+        border-radius: 16px !important;
+        border: 1px solid rgba(0,0,0,0.08) !important;
+        background: #ffffff !important;
+        font-size: 14px !important;
+        color: #1a1a1a !important;
+        font-weight: 400 !important;
+        letter-spacing: -0.1px !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04) !important;
         display: flex !important;
         align-items: center !important;
         gap: 8px !important;
       }
 
       .poe-status::before {
-        content: 'ℹ️' !important;
-        font-size: 14px !important;
+        content: '' !important;
+        width: 6px !important;
+        height: 6px !important;
+        border-radius: 50% !important;
+        background: #6b7280 !important;
+        flex-shrink: 0 !important;
       }
 
       .poe-status.success {
-        background: #f1f8e9 !important;
-        border-color: #c8e6c9 !important;
-        color: #2e7d32 !important;
+        background: #ffffff !important;
+        border-color: rgba(34, 197, 94, 0.2) !important;
+        color: #15803d !important;
       }
 
       .poe-status.success::before {
-        content: '✅' !important;
+        background: #22c55e !important;
       }
 
       .poe-status.error {
-        background: #fef7f0 !important;
-        border-color: #ffcdd2 !important;
-        color: #d32f2f !important;
+        background: #ffffff !important;
+        border-color: rgba(239, 68, 68, 0.2) !important;
+        color: #dc2626 !important;
       }
 
       .poe-status.error::before {
-        content: '❌' !important;
+        background: #ef4444 !important;
       }
 
       .poe-status.warning {
-        background: #fffbf0 !important;
-        border-color: #ffe0b2 !important;
-        color: #f57c00 !important;
+        background: #ffffff !important;
+        border-color: rgba(245, 158, 11, 0.2) !important;
+        color: #d97706 !important;
       }
 
       .poe-status.warning::before {
-        content: '⚠️' !important;
+        background: #f59e0b !important;
       }
 
       .poe-preview {
-        margin: 28px 0 !important;
-        padding: 24px !important;
-        background: linear-gradient(135deg, #fafbfc 0%, #f8f9fa 100%) !important;
-        border-radius: 12px !important;
-        border: 1px solid #e8eaed !important;
-        box-shadow:
-          0 1px 3px rgba(0,0,0,0.04),
-          0 1px 2px rgba(0,0,0,0.06) !important;
+        margin: 16px 0 !important;
+        padding: 20px !important;
+        background: #ffffff !important;
+        border-radius: 20px !important;
+        border: 1px solid rgba(0,0,0,0.08) !important;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08) !important;
         position: relative !important;
         overflow: hidden !important;
       }
 
       .poe-preview::before {
-        content: '' !important;
-        position: absolute !important;
-        top: 0 !important;
-        left: 0 !important;
-        right: 0 !important;
-        height: 2px !important;
-        background: linear-gradient(90deg, #1976d2, #42a5f5, #1976d2) !important;
+        display: none !important;
       }
 
       .poe-preview h4 {
@@ -382,81 +357,111 @@ class POESearcherInterface {
 
       /* Simple POE-style Stats */
       .poe-item-header {
-        padding: 16px 0 12px 0 !important;
-        margin-bottom: 12px !important;
+        padding: 8px 0 6px 0 !important;
+        margin-bottom: 8px !important;
         position: relative !important;
         z-index: 2 !important;
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: flex-start !important;
+      }
+
+      .poe-item-left {
+        flex: 1 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 4px !important;
+      }
+
+      .poe-item-right {
+        flex-shrink: 0 !important;
+        margin-left: 16px !important;
       }
 
       .poe-item-name {
-        font-size: 18px !important;
-        font-weight: 700 !important;
-        color: #212121 !important;
-        margin-bottom: 6px !important;
-        letter-spacing: 0.3px !important;
+        font-size: 20px !important;
+        font-weight: 600 !important;
+        color: #1a1a1a !important;
+        margin-bottom: 8px !important;
+        letter-spacing: -0.5px !important;
         line-height: 1.3 !important;
       }
 
       .poe-item-base {
-        font-size: 14px !important;
-        color: #616161 !important;
-        margin-bottom: 8px !important;
-        font-weight: 500 !important;
-        opacity: 0.9 !important;
+        font-size: 16px !important;
+        color: #6b7280 !important;
+        margin-bottom: 12px !important;
+        font-weight: 400 !important;
+        letter-spacing: -0.1px !important;
       }
 
       .poe-item-info {
-        font-size: 11px !important;
-        color: #424242 !important;
+        font-size: 10px !important;
+        color: #000000 !important;
         text-transform: uppercase !important;
-        letter-spacing: 1.2px !important;
+        letter-spacing: 1.5px !important;
         font-weight: 600 !important;
-        padding: 4px 10px !important;
-        border-radius: 16px !important;
-        background: #f5f5f5 !important;
+        padding: 8px 16px !important;
+        border-radius: 12px !important;
+        background: #f8f9fa !important;
         display: inline-block !important;
-        border: 1px solid #e0e0e0 !important;
+        border: 1px solid rgba(0,0,0,0.08) !important;
         margin-bottom: 12px !important;
+      }
+
+      .poe-implicit-section {
+        padding: 8px 0 !important;
+        border-bottom: 1px solid rgba(0,0,0,0.08) !important;
+        margin-bottom: 10px !important;
       }
 
       .poe-description-section {
         padding: 8px 0 !important;
-        border-bottom: 1px solid #e0e0e0 !important;
-        margin-bottom: 8px !important;
+        border-bottom: 1px solid rgba(0,0,0,0.08) !important;
+        margin-bottom: 10px !important;
       }
 
       .poe-modifiers-section {
-        padding-top: 8px !important;
+        padding-top: 10px !important;
       }
 
       .poe-stats-list {
         display: flex !important;
         flex-direction: column !important;
-        gap: 2px !important;
+        gap: 3px !important;
       }
 
       .poe-stat-line {
         padding: 2px 0 !important;
         line-height: 1.4 !important;
-        font-size: 11px !important;
+        font-size: 12px !important;
       }
 
       .poe-stat-line.description {
-        color: #666 !important;
+        color: #4b5563 !important;
         font-weight: 500 !important;
       }
 
       .poe-stat-line.mapped {
-        color: #2e7d32 !important;
+        color: #059669 !important;
+        font-weight: 500 !important;
       }
 
       .poe-stat-line.unmapped {
-        color: #d32f2f !important;
+        color: #dc2626 !important;
+        font-weight: 500 !important;
+      }
+
+      .poe-stat-line.implicit {
+        font-style: italic !important;
+        opacity: 0.9 !important;
       }
 
       .poe-stat-text {
-        font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace !important;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
         word-break: break-word !important;
+        font-weight: inherit !important;
+        letter-spacing: -0.1px !important;
       }
     `
     document.head.appendChild(styles)
@@ -483,7 +488,7 @@ class POESearcherInterface {
   // Get collapsed interface HTML (Clean FAB)
   getCollapsedHTML() {
     return `
-      <button class="poe-fab" aria-label="POE Trade Buddy" title="POE Trade Buddy">
+      <button class="poe-fab" aria-label="PoE2 Searcher" title="PoE2 Searcher">
         🔍
       </button>
     `
@@ -494,7 +499,7 @@ class POESearcherInterface {
     return `
       <div class="poe-card">
         <div class="poe-header">
-          <h3>POE Trade Buddy</h3>
+          <h3>PoE2 Searcher</h3>
           <button class="poe-close-btn" aria-label="Close">×</button>
         </div>
 
@@ -693,7 +698,10 @@ class POESearcherInterface {
     if (preview && previewContent) {
       const mappedStats = []
       const unmappedStats = []
+      const mappedImplicits = []
+      const unmappedImplicits = []
 
+      // Process explicit stats
       parsed.stats.forEach(stat => {
         const mapping = window.findStatMapping(stat)
         if (mapping) {
@@ -703,20 +711,62 @@ class POESearcherInterface {
         }
       })
 
-      // Get rarity class for color coding
-      const rarityClass = parsed.rarity.toLowerCase()
+      // Process implicit stats
+      parsed.implicitStats.forEach(stat => {
+        const mapping = window.findStatMapping(stat)
+        if (mapping) {
+          mappedImplicits.push(stat)
+        } else {
+          unmappedImplicits.push(stat)
+        }
+      })
+
+      // Get mapped category name for filter
+      const mappedCategory = window.ITEM_CLASS_TO_CATEGORY[parsed.itemClass] || parsed.itemClass
 
       // POE-style layout with description and modifier stats
       let content = `
         <div class="poe-item-header">
-          <div class="poe-item-info">${parsed.itemClass}</div>
-          <div class="poe-item-name">${parsed.name}</div>
-          <div class="poe-item-base">${parsed.baseType}</div>
+          <div class="poe-item-left">
+            <div class="poe-item-name">${parsed.name}</div>
+            <div class="poe-item-base">${parsed.baseType}</div>
+          </div>
+          <div class="poe-item-right">
+            <div class="poe-item-info">${mappedCategory}</div>
+          </div>
         </div>
       `
 
       // Debug: Log description stats
       console.log('Description stats:', parsed.descriptionStats)
+      console.log('Implicit stats:', parsed.implicitStats)
+
+      // Add implicit stats first if they exist
+      if (mappedImplicits.length > 0 || unmappedImplicits.length > 0) {
+        content += `
+          <div class="poe-implicit-section">
+            <div class="poe-stats-list">
+        `
+
+        // Add mapped implicit stats (green - will be searched)
+        mappedImplicits.forEach(stat => {
+          content += `<div class="poe-stat-line mapped implicit">
+            <span class="poe-stat-text">${stat}</span>
+          </div>`
+        })
+
+        // Add unmapped implicit stats (red with unsupported label - will be skipped)
+        unmappedImplicits.forEach(stat => {
+          content += `<div class="poe-stat-line unmapped implicit">
+            <span class="poe-stat-text">${stat} (unsupported)</span>
+          </div>`
+        })
+
+        content += `
+            </div>
+          </div>
+        `
+      }
 
       // Add description stats if they exist
       if (parsed.descriptionStats && parsed.descriptionStats.length > 0) {
@@ -737,7 +787,7 @@ class POESearcherInterface {
         `
       }
 
-      // Add modifier stats if they exist
+      // Add explicit modifier stats if they exist
       if (mappedStats.length > 0 || unmappedStats.length > 0) {
         content += `
           <div class="poe-modifiers-section">
