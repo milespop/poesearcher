@@ -1,0 +1,218 @@
+{
+  "schemaVersion": 1,
+  "campaigns": [
+    {
+      "campaignId": "2c6ad1f6-ce04-4cfd-9877-a9ec3f3c4e3c",
+      "logo": {
+        "imageUrl": "36e9854b-24a3-4ef8-9c09-d621c871cce2/9322b7ab-f602-4fc9-856d-07799ca18a97.png",
+        "destinationUrl": "https://account.brave.com/?intent=checkout&product=vpn",
+        "alt": "Brave VPN can help you access your favorite content no matter where you are in the world.",
+        "companyName": "Brave"
+      },
+      "wallpapers": [
+        {
+          "imageUrl": "36e9854b-24a3-4ef8-9c09-d621c871cce2/91426378-7bab-400a-8e58-c7ab34891ad4.jpg",
+          "creativeInstanceId": "f282209b-6a55-474b-a7b5-9beacd5da820",
+          "focalPoint": {
+            "x": 1280,
+            "y": 720
+          }
+        },
+        {
+          "imageUrl": "f18b27ac-2574-4211-95ec-2841d5914c82/00e3fc68-ebe0-40e4-9217-0a7e1c44fca2.jpg",
+          "creativeInstanceId": "4f07c494-c857-4c69-801d-57a2b8cfbb26",
+          "focalPoint": {
+            "x": 1280,
+            "y": 720
+          },
+          "logo": {
+            "imageUrl": "f18b27ac-2574-4211-95ec-2841d5914c82/3cf33bd0-75d5-4cc2-9890-e6a6ec80dc1c.png",
+            "destinationUrl": "https://account.brave.com/?intent=checkout&product=vpn",
+            "alt": "Brave VPN can help you access your favorite content no matter where you are in the world.",
+            "companyName": "Brave"
+          }
+        },
+        {
+          "imageUrl": "32655658-3f9e-4103-82c8-e1aec5d978bf/9c96771f-738d-495c-afbd-758cfd4e7278.jpg",
+          "creativeInstanceId": "0a832388-0619-463a-8d56-d698fae43964",
+          "focalPoint": {
+            "x": 1280,
+            "y": 720
+          },
+          "logo": {
+            "imageUrl": "32655658-3f9e-4103-82c8-e1aec5d978bf/e4053273-ea31-4114-bf55-9df32792ba67.png",
+            "destinationUrl": "https://account.brave.com/?intent=checkout&product=vpn",
+            "alt": "Brave VPN can help you access your favorite content no matter where you are in the world.",
+            "companyName": "Brave"
+          }
+        }
+      ]
+    }
+  ],
+  "campaigns2": [
+    {
+      "campaignId": "2c6ad1f6-ce04-4cfd-9877-a9ec3f3c4e3c",
+      "logo": {
+        "imageUrl": "36e9854b-24a3-4ef8-9c09-d621c871cce2/9322b7ab-f602-4fc9-856d-07799ca18a97.png",
+        "destinationUrl": "https://account.brave.com/?intent=checkout&product=vpn",
+        "alt": "Brave VPN can help you access your favorite content no matter where you are in the world.",
+        "companyName": "Brave"
+      },
+      "wallpapers": [
+        {
+          "imageUrl": "36e9854b-24a3-4ef8-9c09-d621c871cce2/91426378-7bab-400a-8e58-c7ab34891ad4.jpg",
+          "creativeInstanceId": "f282209b-6a55-474b-a7b5-9beacd5da820",
+          "focalPoint": {
+            "x": 1280,
+            "y": 720
+          }
+        },
+        {
+          "imageUrl": "f18b27ac-2574-4211-95ec-2841d5914c82/00e3fc68-ebe0-40e4-9217-0a7e1c44fca2.jpg",
+          "creativeInstanceId": "4f07c494-c857-4c69-801d-57a2b8cfbb26",
+          "focalPoint": {
+            "x": 1280,
+            "y": 720
+          },
+          "logo": {
+            "imageUrl": "f18b27ac-2574-4211-95ec-2841d5914c82/3cf33bd0-75d5-4cc2-9890-e6a6ec80dc1c.png",
+            "destinationUrl": "https://account.brave.com/?intent=checkout&product=vpn",
+            "alt": "Brave VPN can help you access your favorite content no matter where you are in the world.",
+            "companyName": "Brave"
+          }
+        },
+        {
+          "imageUrl": "32655658-3f9e-4103-82c8-e1aec5d978bf/9c96771f-738d-495c-afbd-758cfd4e7278.jpg",
+          "creativeInstanceId": "0a832388-0619-463a-8d56-d698fae43964",
+          "focalPoint": {
+            "x": 1280,
+            "y": 720
+          },
+          "logo": {
+            "imageUrl": "32655658-3f9e-4103-82c8-e1aec5d978bf/e4053273-ea31-4114-bf55-9df32792ba67.png",
+            "destinationUrl": "https://account.brave.com/?intent=checkout&product=vpn",
+            "alt": "Brave VPN can help you access your favorite content no matter where you are in the world.",
+            "companyName": "Brave"
+          }
+        }
+      ]
+    },
+    {
+      "campaignId": "e80ae1c9-88fa-4ccd-92f4-3443f3615c3f",
+      "logo": {
+        "imageUrl": "b716af8f-22c6-4287-bf1d-7172a3ba1ae1/4c8a3277-c964-4ad1-b69b-af31be849ce1.png",
+        "destinationUrl": "chrome://settings/surveyPanelist",
+        "alt": "Shape the future of Brave - Join Brave's trusted panel to share regular feedback about Brave, influence product decisions and more - join the panel",
+        "companyName": "Brave"
+      },
+      "wallpapers": [
+        {
+          "imageUrl": "b716af8f-22c6-4287-bf1d-7172a3ba1ae1/2f043b95-cc40-47cc-b569-c17795583e3d.jpg",
+          "creativeInstanceId": "8957191d-9e0c-4658-ac9f-b297c953915f",
+          "focalPoint": {
+            "x": 1104,
+            "y": 720
+          },
+          "conditionMatchers": [
+            {
+              "prefPath": "[virtual]:is_survey_panelist",
+              "condition": "0"
+            },
+            {
+              "prefPath": "[virtual]:ad_events|e80ae1c9-88fa-4ccd-92f4-3443f3615c3f|view",
+              "condition": "[R≤]:20"
+            },
+            {
+              "prefPath": "[virtual]:ad_events|e80ae1c9-88fa-4ccd-92f4-3443f3615c3f|click",
+              "condition": "[R≤]:2"
+            }
+          ]
+        },
+        {
+          "imageUrl": "48fd6c0a-d1e9-4b55-8dff-194e56fd21be/02aa31f5-dfec-4fee-91fc-3ae9f917dfc4.jpg",
+          "creativeInstanceId": "0b7c4b0f-5273-42e3-bc01-991eb0693dd5",
+          "focalPoint": {
+            "x": 1105,
+            "y": 720
+          },
+          "logo": {
+            "imageUrl": "48fd6c0a-d1e9-4b55-8dff-194e56fd21be/4c8a3277-c964-4ad1-b69b-af31be849ce1.png",
+            "destinationUrl": "chrome://settings/surveyPanelist",
+            "alt": "Shape the future of Brave - Join Brave's trusted panel to share regular feedback about Brave, influence product decisions and more - join the panel",
+            "companyName": "Brave"
+          },
+          "conditionMatchers": [
+            {
+              "prefPath": "[virtual]:is_survey_panelist",
+              "condition": "0"
+            },
+            {
+              "prefPath": "[virtual]:ad_events|e80ae1c9-88fa-4ccd-92f4-3443f3615c3f|view",
+              "condition": "[R≤]:20"
+            },
+            {
+              "prefPath": "[virtual]:ad_events|e80ae1c9-88fa-4ccd-92f4-3443f3615c3f|click",
+              "condition": "[R≤]:2"
+            }
+          ]
+        },
+        {
+          "imageUrl": "a83c5d61-0922-4ca8-b5f0-6886bd69acf1/dc3ba691-3f84-44ce-8a65-3d3e8fdb667e.jpg",
+          "creativeInstanceId": "a33da1dd-9352-441d-90f7-c76a369e03af",
+          "focalPoint": {
+            "x": 1105,
+            "y": 720
+          },
+          "logo": {
+            "imageUrl": "a83c5d61-0922-4ca8-b5f0-6886bd69acf1/4c8a3277-c964-4ad1-b69b-af31be849ce1.png",
+            "destinationUrl": "chrome://settings/surveyPanelist",
+            "alt": "Shape the future of Brave - Join Brave's trusted panel to share regular feedback about Brave, influence product decisions and more - join the panel",
+            "companyName": "Brave"
+          },
+          "conditionMatchers": [
+            {
+              "prefPath": "[virtual]:is_survey_panelist",
+              "condition": "0"
+            },
+            {
+              "prefPath": "[virtual]:ad_events|e80ae1c9-88fa-4ccd-92f4-3443f3615c3f|view",
+              "condition": "[R≤]:20"
+            },
+            {
+              "prefPath": "[virtual]:ad_events|e80ae1c9-88fa-4ccd-92f4-3443f3615c3f|click",
+              "condition": "[R≤]:2"
+            }
+          ]
+        },
+        {
+          "imageUrl": "ec1ad1f2-c4f3-4686-91aa-c104ee28d39c/c4c75d74-f211-45eb-989d-137cc1d8c63e.jpg",
+          "creativeInstanceId": "f0cbc47d-237d-47d9-ba6d-bb9333bfcefc",
+          "focalPoint": {
+            "x": 1280,
+            "y": 720
+          },
+          "logo": {
+            "imageUrl": "ec1ad1f2-c4f3-4686-91aa-c104ee28d39c/4c8a3277-c964-4ad1-b69b-af31be849ce1.png",
+            "destinationUrl": "chrome://settings/surveyPanelist",
+            "alt": "Shape the future of Brave - Join Brave's trusted panel to share regular feedback about Brave, influence product decisions and more - join the panel",
+            "companyName": "Brave"
+          },
+          "conditionMatchers": [
+            {
+              "prefPath": "[virtual]:is_survey_panelist",
+              "condition": "0"
+            },
+            {
+              "prefPath": "[virtual]:ad_events|e80ae1c9-88fa-4ccd-92f4-3443f3615c3f|view",
+              "condition": "[R≤]:20"
+            },
+            {
+              "prefPath": "[virtual]:ad_events|e80ae1c9-88fa-4ccd-92f4-3443f3615c3f|click",
+              "condition": "[R≤]:2"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

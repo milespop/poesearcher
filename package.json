@@ -1,0 +1,11 @@
+{
+  "name": "poe-searcher",
+  "version": "0.1.0",
+  "description": "Path of Exile 2 Item Market Search Tool",
+  "license": "MIT",
+  "author": "POE Searcher Team",
+  "main": "dist/main/index.js",
+  "scripts": {
+    "test": "echo 'No tests'"
+  }
+}
