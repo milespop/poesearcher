@@ -1,11 +1,11 @@
-// POE Searcher - Main Content Script
+// PoE2 Searcher - Main Content Script
 // Initializes the POE trade automation interface
 
 // Main execution
 (async function() {
   'use strict'
 
-  console.log('🎯 POE Searcher content script starting...')
+  console.log('🎯 PoE2 Searcher content script starting...')
 
   // Check if we're on a POE trade site
   if (!window.location.hostname.includes('pathofexile.com')) {
@@ -32,7 +32,7 @@
 
   // Initialize the interface
   if (window.POESearcherInterface) {
-    console.log('🎯 POE Searcher initializing...')
+    console.log('🎯 PoE2 Searcher initializing...')
     const searcher = new window.POESearcherInterface()
     await searcher.init()
   }

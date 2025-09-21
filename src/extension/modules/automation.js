@@ -15,17 +15,18 @@ async function performSearch(parsed) {
     await setItemType(parsed)
 
     // Step 3: Expand filters if we have stats to add
-    if (parsed.stats.length > 0) {
-      console.log(`📋 Step 3: Expanding filters for ${parsed.stats.length} stats`)
+    const allStats = [...(parsed.implicitStats || []), ...(parsed.stats || [])]
+    if (allStats.length > 0) {
+      console.log(`📋 Step 3: Expanding filters for ${allStats.length} stats (${parsed.implicitStats?.length || 0} implicit, ${parsed.stats?.length || 0} explicit)`)
       await expandFilters()
 
       // Step 3.5: Configure filter categories
       console.log(`📋 Step 3.5: Setting filter categories (only Type Filters enabled)`)
       await setFilterCategories()
 
-      // Step 4: Add stat filters
+      // Step 4: Add stat filters (implicit stats first, then explicit)
       console.log(`📋 Step 4: Adding stat filters`)
-      await addStatFilters(parsed.stats)
+      await addStatFilters(allStats)
     }
 
     // Step 5: Execute search
