@@ -23,7 +23,7 @@
         "modules/statMappings.js",
         "modules/itemParser.js",
         "modules/automation.js",
-        "modules/interface.js",
+        "modules/interface_clean.js",
         "content.js"
       ],
       "run_at": "document_end"

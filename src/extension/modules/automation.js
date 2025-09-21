@@ -253,19 +253,12 @@ async function addSingleStatFilter(mapping) {
 
   await new Promise(resolve => setTimeout(resolve, 300))
 
-  // Step 3.5: Check what options are available in the dropdown and select exact match
-  // Only do exact matching for "Adds # to #" patterns to avoid affecting other searches
-  const needsExactMatch = mapping.filterText.includes('Adds # to #')
-
-  if (needsExactMatch) {
-    console.log(`🎯 This is an "Adds # to #" stat - will look for exact match`)
-  }
-
+  // Step 3.5: Smart dropdown selection - find best match and avoid "desecrated" versions
   const dropdownOptions = document.querySelectorAll('.multiselect__option span')
   console.log(`📋 Dropdown shows ${dropdownOptions.length} options after typing`)
 
-  // Find and click the exact match (only for "Adds # to #" stats)
-  let foundExact = false
+  let bestMatch = null
+  let exactMatch = null
   let firstFiveOptions = []
 
   for (let i = 0; i < dropdownOptions.length; i++) {
@@ -277,74 +270,89 @@ async function addSingleStatFilter(mapping) {
       firstFiveOptions.push(optText)
     }
 
-    // Check for exact match only if we need exact matching
-    if (needsExactMatch && optText === mapping.filterText && !foundExact) {
-      foundExact = true
+    // Skip any "desecrated" versions
+    if (optText.toLowerCase().includes('desecrated')) {
+      console.log(`⚠️ Skipping desecrated version: "${optText}"`)
+      continue
+    }
+
+    // Check for exact match
+    if (optText === mapping.filterText) {
+      exactMatch = opt
       console.log(`✅ Found exact match at position ${i + 1}: "${optText}"`)
+      break
+    }
 
-      // Click on the parent option element (the actual clickable element)
-      const optionElement = opt.closest('.multiselect__option')
-      if (optionElement) {
-        optionElement.click()
-        console.log('🎯 Clicked exact match option')
+    // Check for best partial match (only if no exact match yet)
+    if (!bestMatch && optText.includes(mapping.filterText.replace('#', '').trim())) {
+      bestMatch = opt
+      console.log(`📍 Found potential match at position ${i + 1}: "${optText}"`)
+    }
+  }
 
-        // Wait for selection to register
-        await new Promise(resolve => setTimeout(resolve, 300))
+  // Use exact match if found, otherwise use best match
+  const selectedOption = exactMatch || bestMatch
 
-        // No need to press Enter after clicking
-        console.log('✅ Option selected via click, skipping Enter key')
+  if (selectedOption) {
+    const optText = selectedOption.textContent.trim()
+    console.log(`🎯 Selecting option: "${optText}"`)
 
-        // Skip the Enter key press since we already selected by clicking
-        await new Promise(resolve => setTimeout(resolve, 200))
+    // Click on the parent option element
+    const optionElement = selectedOption.closest('.multiselect__option')
+    if (optionElement) {
+      optionElement.click()
+      console.log('🎯 Clicked selected option')
 
-        // Jump to verification step
-        const filterTitles = document.querySelectorAll('.filter-title')
-        console.log(`🔍 Looking for filter containing: "${mapping.filterText}"`)
-        console.log(`📋 Found ${filterTitles.length} filter titles:`, Array.from(filterTitles).map(el => `"${el.textContent.trim()}"`))
+      // Wait for selection to register
+      await new Promise(resolve => setTimeout(resolve, 300))
 
-        const newFilter = Array.from(filterTitles).find(el => {
-          const cleanTitle = el.textContent.replace(/explicit\s+/i, '').replace(/\s+/g, ' ').trim()
-          // Check if the filter title matches our filter text
-          return cleanTitle === mapping.filterText || cleanTitle.includes(mapping.filterText)
-        })
+      // Jump to verification step
+      const filterTitles = document.querySelectorAll('.filter-title')
+      console.log(`🔍 Looking for filter containing: "${mapping.filterText}"`)
+      console.log(`📋 Found ${filterTitles.length} filter titles:`, Array.from(filterTitles).map(el => `"${el.textContent.trim()}"`))
 
-        if (!newFilter) {
-          console.error(`❌ Filter was not created for: ${mapping.filterText}`)
-          return false
-        }
+      const newFilter = Array.from(filterTitles).find(el => {
+        const cleanTitle = el.textContent.replace(/explicit\s+/i, '').replace(/\s+/g, ' ').trim()
+        return cleanTitle === mapping.filterText || cleanTitle.includes(mapping.filterText)
+      })
 
-        console.log(`✅ Filter created: ${newFilter.textContent.trim()}`)
-
-        // Now set the min value
-        // Find the min input field for this filter
-        const filterElement = newFilter.closest('.filter')
-        if (filterElement) {
-          const minInput = filterElement.querySelector('input[placeholder="min"]')
-          if (minInput && mapping.value) {
-            console.log(`💰 Setting min value to: ${mapping.value}`)
-            minInput.focus()
-            minInput.value = mapping.value
-            minInput.dispatchEvent(new Event('input', { bubbles: true }))
-            minInput.dispatchEvent(new Event('change', { bubbles: true }))
-            console.log(`✅ Min value set to: ${mapping.value}`)
-          }
-        }
-
-        return true
+      if (!newFilter) {
+        console.error(`❌ Filter was not created for: ${mapping.filterText}`)
+        return false
       }
+
+      console.log(`✅ Filter created: ${newFilter.textContent.trim()}`)
+
+      // Set the min value
+      const filterElement = newFilter.closest('.filter')
+      if (filterElement) {
+        const minInput = filterElement.querySelector('input[placeholder="min"]')
+        if (minInput && mapping.value) {
+          console.log(`💰 Setting min value to: ${mapping.value}`)
+          minInput.focus()
+          minInput.value = mapping.value
+          minInput.dispatchEvent(new Event('input', { bubbles: true }))
+          minInput.dispatchEvent(new Event('change', { bubbles: true }))
+          console.log(`✅ Min value set to: ${mapping.value}`)
+        }
+      }
+
+      return true
     }
   }
 
   // Log what we saw in the dropdown
   console.log(`📋 First 5 options:`, firstFiveOptions)
 
-  if (!foundExact && needsExactMatch) {
-    console.log(`⚠️ No exact match found for "${mapping.filterText}" (expected for "Adds # to #" stats)`)
-  } else if (!foundExact) {
-    console.log(`⏎ No exact match needed - will press Enter to select first option`)
+  if (!selectedOption) {
+    console.log(`⚠️ No suitable match found, falling back to Enter key`)
+  } else {
+    console.log(`✅ Used smart selection, skipping Enter key fallback`)
+    return true
   }
 
-  // Fallback to Enter key if no exact match was clicked
+  // Fallback to Enter key if no smart selection was made
+  console.log(`⏎ Falling back to Enter key selection`)
   // Step 4: Press Enter to confirm selection
 
   // Try multiple Enter events - some components need keyup, keypress, or both
