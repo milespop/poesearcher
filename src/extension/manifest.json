@@ -18,8 +18,14 @@
 
   "content_scripts": [
     {
-      "matches": ["*://www.pathofexile.com/trade2/*"],
-      "js": ["content.js"],
+      "matches": ["*://www.pathofexile.com/trade2/search/*"],
+      "js": [
+        "modules/statMappings.js",
+        "modules/itemParser.js",
+        "modules/automation.js",
+        "modules/interface.js",
+        "content.js"
+      ],
       "run_at": "document_end"
     }
   ]
