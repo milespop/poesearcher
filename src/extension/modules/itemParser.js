@@ -84,7 +84,8 @@ function parseItem(text) {
     baseType: '',
     rarity: '',
     itemClass: '',
-    stats: []
+    stats: [],
+    descriptionStats: []
   }
 
   let currentSection = 'header'
@@ -118,16 +119,9 @@ function parseItem(text) {
       } else if (!parsed.baseType) {
         parsed.baseType = line
       }
-    } else if (sectionIndex >= 2) {
-      // Stats section (skip requirements/sockets/etc)
-      // Skip various non-stat lines
-      if (line.includes('Requires:') ||
-          line.includes('Sockets:') ||
-          line.includes('Item Level:') ||
-          line.includes('Grants Skill:') ||
-          line.includes('Corrupted') ||
-          line.includes('Mirrored') ||
-          line.includes('Block chance:') ||
+    } else if (sectionIndex === 1) {
+      // First section after header - description stats (base item properties)
+      if (line.includes('Block chance:') ||
           line.includes('Armour:') ||
           line.includes('Evasion Rating:') ||
           line.includes('Energy Shield:') ||
@@ -140,10 +134,25 @@ function parseItem(text) {
           line.includes('Attacks per Second:') ||
           line.includes('Reload Time:') ||
           line.includes('Weapon Range:')) {
+        // Remove (augmented) from description stats
+        const cleanLine = line.replace(/\s*\(augmented\)/, '')
+        console.log('Adding description stat:', cleanLine)
+        parsed.descriptionStats.push(cleanLine)
+      }
+    } else if (sectionIndex >= 2) {
+      // Later sections - handle modifier stats
+
+      // Skip various non-stat lines
+      if (line.includes('Requires:') ||
+          line.includes('Sockets:') ||
+          line.includes('Item Level:') ||
+          line.includes('Grants Skill:') ||
+          line.includes('Corrupted') ||
+          line.includes('Mirrored')) {
         continue
       }
 
-      // This looks like a stat
+      // This looks like a modifier stat (+ or - with numbers or %)
       if (line.match(/[\+\-]?\d+/) || line.includes('%')) {
         parsed.stats.push(line)
       }
