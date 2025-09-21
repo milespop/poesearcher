@@ -215,6 +215,74 @@ class POESearcherInterface {
         box-shadow: 0 2px 8px rgba(25, 118, 210, 0.2), 0 0 0 3px rgba(25, 118, 210, 0.3) !important;
       }
 
+      .poe-scale-container {
+        margin: 16px 0 !important;
+        padding: 16px !important;
+        background: #fafafa !important;
+        border-radius: 12px !important;
+        border: 1px solid #e0e0e0 !important;
+      }
+
+      .poe-scale-label {
+        display: block !important;
+        font-size: 14px !important;
+        font-weight: 500 !important;
+        color: #333 !important;
+        margin-bottom: 8px !important;
+        letter-spacing: -0.1px !important;
+      }
+
+      #poe-scale-value {
+        color: #1976d2 !important;
+        font-weight: 600 !important;
+      }
+
+      .poe-scale-slider {
+        width: 100% !important;
+        height: 6px !important;
+        border-radius: 3px !important;
+        background: #e0e0e0 !important;
+        outline: none !important;
+        -webkit-appearance: none !important;
+        appearance: none !important;
+        cursor: pointer !important;
+      }
+
+      .poe-scale-slider::-webkit-slider-thumb {
+        -webkit-appearance: none !important;
+        appearance: none !important;
+        width: 20px !important;
+        height: 20px !important;
+        border-radius: 50% !important;
+        background: #1976d2 !important;
+        cursor: pointer !important;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2) !important;
+        transition: all 0.2s ease !important;
+      }
+
+      .poe-scale-slider::-webkit-slider-thumb:hover {
+        background: #1565c0 !important;
+        transform: scale(1.1) !important;
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3) !important;
+      }
+
+      .poe-scale-slider::-moz-range-thumb {
+        width: 20px !important;
+        height: 20px !important;
+        border-radius: 50% !important;
+        background: #1976d2 !important;
+        cursor: pointer !important;
+        border: none !important;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2) !important;
+        transition: all 0.2s ease !important;
+      }
+
+      .poe-scale-slider::-moz-range-thumb:hover {
+        background: #1565c0 !important;
+        transform: scale(1.1) !important;
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3) !important;
+      }
+
       .poe-status {
         margin: 12px 0 !important;
         padding: 12px 16px !important;
@@ -447,6 +515,10 @@ class POESearcherInterface {
         font-weight: 500 !important;
       }
 
+      .poe-stat-text {
+        position: relative !important;
+      }
+
       .poe-stat-line.unmapped {
         color: #dc2626 !important;
         font-weight: 500 !important;
@@ -518,6 +590,21 @@ class POESearcherInterface {
             <div id="poe-preview-content"></div>
           </div>
 
+          <div class="poe-scale-container">
+            <label class="poe-scale-label">
+              Scale: <span id="poe-scale-value">100%</span>
+            </label>
+            <input
+              type="range"
+              id="poe-scale-slider"
+              class="poe-scale-slider"
+              min="1"
+              max="100"
+              value="100"
+              step="1"
+            />
+          </div>
+
           <button id="poe-search-btn" class="poe-search-btn">
             Search
           </button>
@@ -557,6 +644,10 @@ class POESearcherInterface {
     if (this._searchHandler) {
       const searchBtn = this.container.querySelector('#poe-search-btn')
       if (searchBtn) searchBtn.removeEventListener('click', this._searchHandler)
+    }
+    if (this._scaleHandler) {
+      const scaleSlider = this.container.querySelector('#poe-scale-slider')
+      if (scaleSlider) scaleSlider.removeEventListener('input', this._scaleHandler)
     }
   }
 
@@ -627,6 +718,44 @@ class POESearcherInterface {
       })
     }
 
+    // Scale slider
+    const scaleSlider = this.container.querySelector('#poe-scale-slider')
+    const scaleValue = this.container.querySelector('#poe-scale-value')
+
+    if (scaleSlider && scaleValue) {
+      this._scaleHandler = (e) => {
+        const value = e.target.value
+        scaleValue.textContent = `${value}%`
+
+        // Save scale preference
+        try {
+          chrome.storage.local.set({ scaleValue: value })
+        } catch (e) {}
+
+        // Refresh preview if item is currently shown
+        const textarea = this.container.querySelector('#poe-item-input')
+        if (textarea && textarea.value.trim()) {
+          const validation = window.validatePOEItemFormat(textarea.value.trim())
+          if (validation.isValid) {
+            const parsed = window.parseItem(textarea.value.trim())
+            this.showPreview(parsed)
+          }
+        }
+      }
+
+      scaleSlider.addEventListener('input', this._scaleHandler)
+
+      // Load saved scale value
+      try {
+        chrome.storage.local.get(['scaleValue'], (result) => {
+          if (result.scaleValue) {
+            scaleSlider.value = result.scaleValue
+            scaleValue.textContent = `${result.scaleValue}%`
+          }
+        })
+      } catch (e) {}
+    }
+
     // Search button
     if (searchBtn) {
       searchBtn.addEventListener('click', async () => {
@@ -649,7 +778,12 @@ class POESearcherInterface {
           searchBtn.disabled = true
 
           const parsed = window.parseItem(text)
-          this.updateStatus('Searching...', 'info')
+
+          // Get scale value
+          const scaleSlider = this.container.querySelector('#poe-scale-slider')
+          const scalePercent = scaleSlider ? parseInt(scaleSlider.value) : 100
+
+          this.updateStatus(`Searching... (Scale: ${scalePercent}%)`, 'info')
 
           setTimeout(() => {
             if (this.isExpanded && this.isExecuting) {
@@ -657,7 +791,7 @@ class POESearcherInterface {
             }
           }, 500)
 
-          const result = await window.performSearch(parsed)
+          const result = await window.performSearch(parsed, scalePercent)
 
           if (result.success) {
             console.log('✅ Search completed successfully!')
@@ -691,11 +825,33 @@ class POESearcherInterface {
   }
 
   // Show preview with POE-style layout
+  // Helper function to get scaled value display
+  getScaledValueDisplay(stat, scalePercent) {
+    if (scalePercent === 100) return ''
+
+    const mapping = window.findStatMapping(stat)
+    if (!mapping || !mapping.value) return ''
+
+    const originalValue = mapping.value
+    const scaledValue = Math.floor(originalValue * (scalePercent / 100))
+
+    // For "Adds # to #" type stats, show the average value we calculated
+    if (mapping.filterText && mapping.filterText.includes('Adds # to #')) {
+      return ` <span style="color: #1976d2 !important; font-weight: 600 !important; font-size: 11px !important;">[${scaledValue} avg]</span>`
+    }
+
+    // For other stats, show the scaled value
+    return ` <span style="color: #1976d2 !important; font-weight: 600 !important; font-size: 11px !important;">[${scaledValue}]</span>`
+  }
+
   showPreview(parsed) {
     const preview = this.container.querySelector('#poe-preview')
     const previewContent = this.container.querySelector('#poe-preview-content')
 
     if (preview && previewContent) {
+      // Get current scale value
+      const scaleSlider = this.container.querySelector('#poe-scale-slider')
+      const scalePercent = scaleSlider ? parseInt(scaleSlider.value) : 100
       const mappedStats = []
       const unmappedStats = []
       const mappedImplicits = []
@@ -750,8 +906,9 @@ class POESearcherInterface {
 
         // Add mapped implicit stats (green - will be searched)
         mappedImplicits.forEach(stat => {
+          const scaledDisplay = this.getScaledValueDisplay(stat, scalePercent)
           content += `<div class="poe-stat-line mapped implicit">
-            <span class="poe-stat-text">${stat}</span>
+            <span class="poe-stat-text">${stat}${scaledDisplay}</span>
           </div>`
         })
 
@@ -796,8 +953,9 @@ class POESearcherInterface {
 
         // Add mapped stats (green - will be searched)
         mappedStats.forEach(stat => {
+          const scaledDisplay = this.getScaledValueDisplay(stat, scalePercent)
           content += `<div class="poe-stat-line mapped">
-            <span class="poe-stat-text">${stat}</span>
+            <span class="poe-stat-text">${stat}${scaledDisplay}</span>
           </div>`
         })
 

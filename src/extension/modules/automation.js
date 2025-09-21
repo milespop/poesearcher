@@ -2,8 +2,9 @@
 // Handles POE trade site automation and DOM manipulation
 
 // Main search automation function
-async function performSearch(parsed) {
+async function performSearch(parsed, scalePercent = 100) {
   console.log(`🔍 Performing search with item data:`, parsed)
+  console.log(`🎚️ Scale: ${scalePercent}%`)
 
   try {
     // Step 1: Clear existing search
@@ -25,8 +26,8 @@ async function performSearch(parsed) {
       await setFilterCategories()
 
       // Step 4: Add stat filters (implicit stats first, then explicit)
-      console.log(`📋 Step 4: Adding stat filters`)
-      await addStatFilters(allStats)
+      console.log(`📋 Step 4: Adding stat filters with ${scalePercent}% scale`)
+      await addStatFilters(allStats, scalePercent)
     }
 
     // Step 5: Execute search
@@ -207,7 +208,7 @@ async function setFilterCategoryState(categoryName, enabled) {
 }
 
 // Add stat filters
-async function addStatFilters(stats) {
+async function addStatFilters(stats, scalePercent = 100) {
   console.log(`📊 Adding stat filters for:`, stats)
 
   for (const stat of stats) {
@@ -219,9 +220,18 @@ async function addStatFilters(stats) {
       continue
     }
 
-    console.log(`🎯 Adding filter: "${stat}" -> "${mapping.filterText}"`)
+    // Apply scaling to the mapping value
+    let scaledMapping = { ...mapping }
+    if (mapping.value && scalePercent !== 100) {
+      const originalValue = mapping.value
+      const scaledValue = Math.floor(originalValue * (scalePercent / 100))
+      scaledMapping.value = scaledValue
+      console.log(`🎚️ Scaling "${stat}": ${originalValue} -> ${scaledValue} (${scalePercent}%)`)
+    }
 
-    const success = await addSingleStatFilter(mapping)
+    console.log(`🎯 Adding filter: "${stat}" -> "${scaledMapping.filterText}" (value: ${scaledMapping.value})`)
+
+    const success = await addSingleStatFilter(scaledMapping)
     if (success) {
       console.log(`✅ Added: "${stat}"`)
     } else {
