@@ -92,6 +92,32 @@ class POESearcherInterface {
         color: #ffffff !important;
       }
 
+      .poe-header-buttons {
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+      }
+
+      .poe-options-btn {
+        background: transparent !important;
+        border: 1px solid rgba(255,255,255,0.2) !important;
+        color: #ffffff !important;
+        width: 32px !important;
+        height: 32px !important;
+        border-radius: 6px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        cursor: pointer !important;
+        font-size: 14px !important;
+        transition: all 0.2s ease !important;
+      }
+
+      .poe-options-btn:hover {
+        background: rgba(255,255,255,0.1) !important;
+        border-color: rgba(255,255,255,0.4) !important;
+      }
+
       .poe-close-btn {
         background: none !important;
         border: none !important;
@@ -281,6 +307,103 @@ class POESearcherInterface {
         background: #1565c0 !important;
         transform: scale(1.1) !important;
         box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3) !important;
+      }
+
+      .poe-settings {
+        background: #f8f9fa !important;
+        border-bottom: 1px solid #e0e0e0 !important;
+        padding: 16px 24px !important;
+        margin: 0 !important;
+      }
+
+      .poe-settings-content h4 {
+        margin: 0 0 12px 0 !important;
+        font-size: 14px !important;
+        font-weight: 600 !important;
+        color: #333 !important;
+        letter-spacing: -0.1px !important;
+      }
+
+      .poe-checkbox-label {
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        cursor: pointer !important;
+        font-size: 13px !important;
+        color: #555 !important;
+      }
+
+      .poe-checkbox {
+        width: 16px !important;
+        height: 16px !important;
+        border: 2px solid #ccc !important;
+        border-radius: 3px !important;
+        background: white !important;
+        cursor: pointer !important;
+        appearance: none !important;
+        -webkit-appearance: none !important;
+        transition: all 0.2s ease !important;
+      }
+
+      .poe-checkbox:checked {
+        background: #1976d2 !important;
+        border-color: #1976d2 !important;
+      }
+
+      .poe-checkbox:checked::after {
+        content: '✓' !important;
+        display: block !important;
+        color: white !important;
+        font-size: 12px !important;
+        text-align: center !important;
+        line-height: 12px !important;
+      }
+
+      .poe-stat-checkbox-label {
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        cursor: pointer !important;
+        width: 100% !important;
+      }
+
+      .poe-stat-checkbox {
+        width: 14px !important;
+        height: 14px !important;
+        border: 1px solid #ccc !important;
+        border-radius: 2px !important;
+        background: white !important;
+        cursor: pointer !important;
+        appearance: none !important;
+        -webkit-appearance: none !important;
+        transition: all 0.2s ease !important;
+        flex-shrink: 0 !important;
+      }
+
+      .poe-stat-checkbox:checked {
+        background: #059669 !important;
+        border-color: #059669 !important;
+      }
+
+      .poe-stat-checkbox:checked::after {
+        content: '✓' !important;
+        display: block !important;
+        color: white !important;
+        font-size: 10px !important;
+        text-align: center !important;
+        line-height: 12px !important;
+        font-weight: bold !important;
+      }
+
+      .poe-stat-checkbox:disabled {
+        background: #f5f5f5 !important;
+        border-color: #e0e0e0 !important;
+        cursor: not-allowed !important;
+      }
+
+      .poe-colorblind-mode .poe-stat-checkbox:checked {
+        background: #0066cc !important;
+        border-color: #0066cc !important;
       }
 
       .poe-status {
@@ -524,6 +647,25 @@ class POESearcherInterface {
         font-weight: 500 !important;
       }
 
+      /* Colorblind-friendly mode styles */
+      .poe-colorblind-mode .poe-stat-line.mapped {
+        color: #0066cc !important;
+        font-weight: 600 !important;
+        border-left: 3px solid #0066cc !important;
+        padding-left: 8px !important;
+        background: rgba(0, 102, 204, 0.05) !important;
+        border-radius: 3px !important;
+      }
+
+      .poe-colorblind-mode .poe-stat-line.unmapped {
+        color: #333333 !important;
+        font-weight: 500 !important;
+        border-left: 3px solid #666666 !important;
+        padding-left: 8px !important;
+        background: rgba(102, 102, 102, 0.05) !important;
+        border-radius: 3px !important;
+      }
+
       .poe-stat-line.implicit {
         font-style: italic !important;
         opacity: 0.9 !important;
@@ -572,7 +714,20 @@ class POESearcherInterface {
       <div class="poe-card">
         <div class="poe-header">
           <h3>PoE2 Searcher</h3>
-          <button class="poe-close-btn" aria-label="Close">×</button>
+          <div class="poe-header-buttons">
+            <button class="poe-options-btn" aria-label="Options" title="Options">⚙</button>
+            <button class="poe-close-btn" aria-label="Close">×</button>
+          </div>
+        </div>
+
+        <div id="poe-settings" class="poe-settings" style="display: none;">
+          <div class="poe-settings-content">
+            <h4>Accessibility Options</h4>
+            <label class="poe-checkbox-label">
+              <input type="checkbox" id="poe-colorblind-mode" class="poe-checkbox">
+              <span class="poe-checkbox-text">Colorblind-friendly mode</span>
+            </label>
+          </div>
         </div>
 
         <div class="poe-content">
@@ -627,6 +782,57 @@ class POESearcherInterface {
       this.container.innerHTML = this.getCollapsedHTML()
     }
 
+    // Options button
+    const optionsBtn = this.container.querySelector('.poe-options-btn')
+    const settingsPanel = this.container.querySelector('#poe-settings')
+
+    if (optionsBtn && settingsPanel) {
+      this._optionsHandler = () => {
+        const isVisible = settingsPanel.style.display !== 'none'
+        settingsPanel.style.display = isVisible ? 'none' : 'block'
+      }
+      optionsBtn.addEventListener('click', this._optionsHandler)
+    }
+
+    // Colorblind mode checkbox
+    const colorblindCheckbox = this.container.querySelector('#poe-colorblind-mode')
+
+    if (colorblindCheckbox) {
+      this._colorblindHandler = (e) => {
+        const isEnabled = e.target.checked
+
+        // Add/remove colorblind class to the entire card
+        const card = this.container.querySelector('.poe-card')
+        if (card) {
+          if (isEnabled) {
+            card.classList.add('poe-colorblind-mode')
+          } else {
+            card.classList.remove('poe-colorblind-mode')
+          }
+        }
+
+        // Save preference
+        try {
+          chrome.storage.local.set({ colorblindMode: isEnabled })
+        } catch (e) {}
+      }
+
+      colorblindCheckbox.addEventListener('change', this._colorblindHandler)
+
+      // Load saved preference
+      try {
+        chrome.storage.local.get(['colorblindMode'], (result) => {
+          if (result.colorblindMode) {
+            colorblindCheckbox.checked = true
+            const card = this.container.querySelector('.poe-card')
+            if (card) {
+              card.classList.add('poe-colorblind-mode')
+            }
+          }
+        })
+      } catch (e) {}
+    }
+
     // Re-setup toggle handlers
     const fab = this.container.querySelector('.poe-fab')
     const closeBtn = this.container.querySelector('.poe-close-btn')
@@ -648,6 +854,14 @@ class POESearcherInterface {
     if (this._scaleHandler) {
       const scaleSlider = this.container.querySelector('#poe-scale-slider')
       if (scaleSlider) scaleSlider.removeEventListener('input', this._scaleHandler)
+    }
+    if (this._optionsHandler) {
+      const optionsBtn = this.container.querySelector('.poe-options-btn')
+      if (optionsBtn) optionsBtn.removeEventListener('click', this._optionsHandler)
+    }
+    if (this._colorblindHandler) {
+      const colorblindCheckbox = this.container.querySelector('#poe-colorblind-mode')
+      if (colorblindCheckbox) colorblindCheckbox.removeEventListener('change', this._colorblindHandler)
     }
   }
 
@@ -783,7 +997,30 @@ class POESearcherInterface {
           const scaleSlider = this.container.querySelector('#poe-scale-slider')
           const scalePercent = scaleSlider ? parseInt(scaleSlider.value) : 100
 
-          this.updateStatus(`Searching... (Scale: ${scalePercent}%)`, 'info')
+          // Filter stats based on checked checkboxes
+          const checkedImplicitStats = []
+          const checkedExplicitStats = []
+
+          this.container.querySelectorAll('.poe-stat-checkbox:checked').forEach(checkbox => {
+            const stat = checkbox.dataset.stat
+            const type = checkbox.dataset.type
+
+            if (type === 'implicit') {
+              checkedImplicitStats.push(stat)
+            } else if (type === 'explicit') {
+              checkedExplicitStats.push(stat)
+            }
+          })
+
+          // Create filtered parsed object
+          const filteredParsed = {
+            ...parsed,
+            stats: checkedExplicitStats,
+            implicitStats: checkedImplicitStats
+          }
+
+          const totalChecked = checkedImplicitStats.length + checkedExplicitStats.length
+          this.updateStatus(`Searching... (${totalChecked} stats, Scale: ${scalePercent}%)`, 'info')
 
           setTimeout(() => {
             if (this.isExpanded && this.isExecuting) {
@@ -791,7 +1028,7 @@ class POESearcherInterface {
             }
           }, 500)
 
-          const result = await window.performSearch(parsed, scalePercent)
+          const result = await window.performSearch(filteredParsed, scalePercent)
 
           if (result.success) {
             console.log('✅ Search completed successfully!')
@@ -826,7 +1063,7 @@ class POESearcherInterface {
 
   // Show preview with POE-style layout
   // Helper function to get scaled value display
-  getScaledValueDisplay(stat, scalePercent) {
+  getScaledValueDisplay(stat, scalePercent, isMapped = true, isColorblindMode = false) {
     if (scalePercent === 100) return ''
 
     const mapping = window.findStatMapping(stat)
@@ -835,13 +1072,21 @@ class POESearcherInterface {
     const originalValue = mapping.value
     const scaledValue = Math.floor(originalValue * (scalePercent / 100))
 
+    // Determine color based on mapping status and colorblind mode
+    let color = '#1976d2' // Default blue
+    if (isMapped) {
+      color = isColorblindMode ? '#0066cc' : '#059669' // Blue for colorblind, green for normal
+    } else {
+      color = isColorblindMode ? '#333333' : '#dc2626' // Dark gray for colorblind, red for normal
+    }
+
     // For "Adds # to #" type stats, show the average value we calculated
     if (mapping.filterText && mapping.filterText.includes('Adds # to #')) {
-      return ` <span style="color: #1976d2 !important; font-weight: 600 !important; font-size: 11px !important;">[${scaledValue} avg]</span>`
+      return ` <span style="color: ${color} !important; font-weight: 600 !important; font-size: 11px !important;">[${scaledValue} avg]</span>`
     }
 
     // For other stats, show the scaled value
-    return ` <span style="color: #1976d2 !important; font-weight: 600 !important; font-size: 11px !important;">[${scaledValue}]</span>`
+    return ` <span style="color: ${color} !important; font-weight: 600 !important; font-size: 11px !important;">[${scaledValue}]</span>`
   }
 
   showPreview(parsed) {
@@ -852,6 +1097,10 @@ class POESearcherInterface {
       // Get current scale value
       const scaleSlider = this.container.querySelector('#poe-scale-slider')
       const scalePercent = scaleSlider ? parseInt(scaleSlider.value) : 100
+
+      // Check if colorblind mode is enabled
+      const card = this.container.querySelector('.poe-card')
+      const isColorblindMode = card && card.classList.contains('poe-colorblind-mode')
       const mappedStats = []
       const unmappedStats = []
       const mappedImplicits = []
@@ -905,17 +1154,23 @@ class POESearcherInterface {
         `
 
         // Add mapped implicit stats (green - will be searched)
-        mappedImplicits.forEach(stat => {
-          const scaledDisplay = this.getScaledValueDisplay(stat, scalePercent)
+        mappedImplicits.forEach((stat, index) => {
+          const scaledDisplay = this.getScaledValueDisplay(stat, scalePercent, true, isColorblindMode)
           content += `<div class="poe-stat-line mapped implicit">
-            <span class="poe-stat-text">${stat}${scaledDisplay}</span>
+            <label class="poe-stat-checkbox-label">
+              <input type="checkbox" class="poe-stat-checkbox" data-stat="${stat}" data-type="implicit" data-index="${index}" checked>
+              <span class="poe-stat-text">${stat}${scaledDisplay}</span>
+            </label>
           </div>`
         })
 
         // Add unmapped implicit stats (red with unsupported label - will be skipped)
-        unmappedImplicits.forEach(stat => {
+        unmappedImplicits.forEach((stat, index) => {
           content += `<div class="poe-stat-line unmapped implicit">
-            <span class="poe-stat-text">${stat} (unsupported)</span>
+            <label class="poe-stat-checkbox-label">
+              <input type="checkbox" class="poe-stat-checkbox" data-stat="${stat}" data-type="implicit" data-index="${index}" disabled>
+              <span class="poe-stat-text">${stat} (unsupported)</span>
+            </label>
           </div>`
         })
 
@@ -952,17 +1207,23 @@ class POESearcherInterface {
         `
 
         // Add mapped stats (green - will be searched)
-        mappedStats.forEach(stat => {
-          const scaledDisplay = this.getScaledValueDisplay(stat, scalePercent)
+        mappedStats.forEach((stat, index) => {
+          const scaledDisplay = this.getScaledValueDisplay(stat, scalePercent, true, isColorblindMode)
           content += `<div class="poe-stat-line mapped">
-            <span class="poe-stat-text">${stat}${scaledDisplay}</span>
+            <label class="poe-stat-checkbox-label">
+              <input type="checkbox" class="poe-stat-checkbox" data-stat="${stat}" data-type="explicit" data-index="${index}" checked>
+              <span class="poe-stat-text">${stat}${scaledDisplay}</span>
+            </label>
           </div>`
         })
 
         // Add unmapped stats (red with unsupported label - will be skipped)
-        unmappedStats.forEach(stat => {
+        unmappedStats.forEach((stat, index) => {
           content += `<div class="poe-stat-line unmapped">
-            <span class="poe-stat-text">${stat} (unsupported)</span>
+            <label class="poe-stat-checkbox-label">
+              <input type="checkbox" class="poe-stat-checkbox" data-stat="${stat}" data-type="explicit" data-index="${index}" disabled>
+              <span class="poe-stat-text">${stat} (unsupported)</span>
+            </label>
           </div>`
         })
 

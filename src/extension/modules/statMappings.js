@@ -580,11 +580,72 @@ const POE_STAT_MAPPINGS = {
     },
 
     // === WAND SPECIFIC STATS ===
+    'of Damage as Extra Fire Damage (desecrated)': {
+      filterText: '#% of Damage as Extra Fire Damage',
+      group: 'desecrated',
+      extractValue: (statText) => {
+        const match = statText.match(/Gain (\d+)% of Damage as Extra Fire Damage\s*\(desecrated\)/)
+        return match ? parseInt(match[1]) : null
+      }
+    },
     'of Damage as Extra Fire Damage': {
       filterText: '#% of Damage as Extra Fire Damage',
       group: 'explicit',
       extractValue: (statText) => {
-        const match = statText.match(/Gain (\d+)% of Damage as Extra Fire Damage/)
+        const match = statText.match(/Gain (\d+)% of Damage as Extra Fire Damage(?!\s*\(desecrated\))/)
+        return match ? parseInt(match[1]) : null
+      }
+    },
+    'of Damage as Extra Cold Damage (desecrated)': {
+      filterText: 'Gain #% of Damage as Extra Cold Damage',
+      group: 'desecrated',
+      extractValue: (statText) => {
+        const match = statText.match(/Gain (\d+)% of Damage as Extra Cold Damage\s*\(desecrated\)/)
+        return match ? parseInt(match[1]) : null
+      }
+    },
+    'of Damage as Extra Cold Damage': {
+      filterText: 'Gain #% of Damage as Extra Cold Damage',
+      group: 'explicit',
+      extractValue: (statText) => {
+        const match = statText.match(/Gain (\d+)% of Damage as Extra Cold Damage(?!\s*\(desecrated\))/)
+        return match ? parseInt(match[1]) : null
+      }
+    },
+    'of Damage as Extra Lightning Damage (desecrated)': {
+      filterText: 'Gain #% of Damage as Extra Lightning Damage',
+      group: 'desecrated',
+      extractValue: (statText) => {
+        // Match desecrated version specifically
+        const match = statText.match(/Gain (\d+)% of Damage as Extra Lightning Damage\s*\(desecrated\)/)
+        return match ? parseInt(match[1]) : null
+      }
+    },
+    'of Damage as Extra Lightning Damage': {
+      filterText: 'Gain #% of Damage as Extra Lightning Damage',
+      group: 'explicit',
+      extractValue: (statText) => {
+        // Match normal version only (not desecrated)
+        const match = statText.match(/Gain (\d+)% of Damage as Extra Lightning Damage(?!\s*\(desecrated\))/)
+        return match ? parseInt(match[1]) : null
+      }
+    },
+
+    'of Damage as Extra Chaos Damage (rune)': {
+      filterText: 'Gain #% of Damage as Extra Chaos Damage',
+      group: 'fractured',
+      extractValue: (statText) => {
+        // Match rune version specifically
+        const match = statText.match(/Gain (\d+)% of Damage as Extra Chaos Damage\s*\(rune\)/)
+        return match ? parseInt(match[1]) : null
+      }
+    },
+    'of Damage as Extra Chaos Damage': {
+      filterText: 'Gain #% of Damage as Extra Chaos Damage',
+      group: 'explicit',
+      extractValue: (statText) => {
+        // Match normal version only (not rune)
+        const match = statText.match(/Gain (\d+)% of Damage as Extra Chaos Damage(?!\s*\(rune\))/)
         return match ? parseInt(match[1]) : null
       }
     },
@@ -873,6 +934,91 @@ const POE_STAT_MAPPINGS = {
       group: 'explicit',
       extractValue: (statText) => {
         const match = statText.match(/(\d+)% of Damage taken bypasses Energy Shield/)
+        return match ? parseInt(match[1]) : null
+      }
+    },
+
+    // === SKILL LEVEL MODIFIERS ===
+    // General skill types
+    'to Level of all Spell Skills': {
+      filterText: '# to Level of all Spell Skills',
+      group: 'explicit',
+      extractValue: (statText) => {
+        const match = statText.match(/\+?(\d+)\s+to Level of all Spell Skills/)
+        return match ? parseInt(match[1]) : null
+      }
+    },
+    'to Level of all Attack Skills': {
+      filterText: '# to Level of all Attack Skills',
+      group: 'explicit',
+      extractValue: (statText) => {
+        const match = statText.match(/\+?(\d+)\s+to Level of all Attack Skills/)
+        return match ? parseInt(match[1]) : null
+      }
+    },
+    'to Level of all Projectile Skills': {
+      filterText: '# to Level of all Projectile Skills',
+      group: 'explicit',
+      extractValue: (statText) => {
+        const match = statText.match(/\+?(\d+)\s+to Level of all Projectile Skills/)
+        return match ? parseInt(match[1]) : null
+      }
+    },
+    'to Level of all Melee Skills': {
+      filterText: '# to Level of all Melee Skills',
+      group: 'explicit',
+      extractValue: (statText) => {
+        const match = statText.match(/\+?(\d+)\s+to Level of all Melee Skills/)
+        return match ? parseInt(match[1]) : null
+      }
+    },
+    'to Level of all Minion Skills': {
+      filterText: '# to Level of all Minion Skills',
+      group: 'explicit',
+      extractValue: (statText) => {
+        const match = statText.match(/\+?(\d+)\s+to Level of all Minion Skills/)
+        return match ? parseInt(match[1]) : null
+      }
+    },
+
+    // Elemental spell skills
+    'to Level of all Fire Spell Skills': {
+      filterText: '# to Level of all Fire Spell Skills',
+      group: 'explicit',
+      extractValue: (statText) => {
+        const match = statText.match(/\+?(\d+)\s+to Level of all Fire Spell Skills/)
+        return match ? parseInt(match[1]) : null
+      }
+    },
+    'to Level of all Cold Spell Skills': {
+      filterText: '# to Level of all Cold Spell Skills',
+      group: 'explicit',
+      extractValue: (statText) => {
+        const match = statText.match(/\+?(\d+)\s+to Level of all Cold Spell Skills/)
+        return match ? parseInt(match[1]) : null
+      }
+    },
+    'to Level of all Lightning Spell Skills': {
+      filterText: '# to Level of all Lightning Spell Skills',
+      group: 'explicit',
+      extractValue: (statText) => {
+        const match = statText.match(/\+?(\d+)\s+to Level of all Lightning Spell Skills/)
+        return match ? parseInt(match[1]) : null
+      }
+    },
+    'to Level of all Chaos Spell Skills': {
+      filterText: '# to Level of all Chaos Spell Skills',
+      group: 'explicit',
+      extractValue: (statText) => {
+        const match = statText.match(/\+?(\d+)\s+to Level of all Chaos Spell Skills/)
+        return match ? parseInt(match[1]) : null
+      }
+    },
+    'to Level of all Physical Spell Skills': {
+      filterText: '# to Level of all Physical Spell Skills',
+      group: 'explicit',
+      extractValue: (statText) => {
+        const match = statText.match(/\+?(\d+)\s+to Level of all Physical Spell Skills/)
         return match ? parseInt(match[1]) : null
       }
     }

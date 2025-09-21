@@ -281,9 +281,23 @@ async function addSingleStatFilter(mapping) {
       firstFiveOptions.push(optText)
     }
 
-    // Skip any "desecrated" versions
-    if (optText.toLowerCase().includes('desecrated')) {
-      console.log(`⚠️ Skipping desecrated version: "${optText}"`)
+    // Check if we should include or skip based on mapping group
+    const optionMutateType = opt.querySelector('i.mutate-type')
+    const mutateTypeClass = optionMutateType ? optionMutateType.className : ''
+    const mutateTypeText = optionMutateType ? optionMutateType.textContent.trim().toLowerCase() : ''
+
+    // Determine the group type from both class and text content
+    let optionGroup = 'explicit' // default
+    if (mutateTypeClass.includes('mutate-type-desecrated') || mutateTypeText === 'desecrated') {
+      optionGroup = 'desecrated'
+    } else if (mutateTypeClass.includes('mutate-type-fractured') || mutateTypeText === 'fractured') {
+      optionGroup = 'fractured'
+    } else if (mutateTypeClass.includes('mutate-type-pseudo') || mutateTypeText === 'pseudo') {
+      optionGroup = 'pseudo'
+    }
+
+    // Skip if the option group doesn't match our mapping group
+    if (optionGroup !== mapping.group) {
       continue
     }
 
