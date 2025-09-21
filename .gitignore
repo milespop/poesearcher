@@ -1,6 +1,7 @@
 # Vaaaaaber
 .claude
 
+context/
 # Dependencies
 node_modules/
 npm-debug.log*
