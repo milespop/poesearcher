@@ -1,5 +1,131 @@
 # poesearcher
 
+## 0.4.0
+
+### Minor Changes
+
+- 59338d0: Add intelligent stat combination for pseudo totals in search filters
+
+  Implements automatic combination of implicit + explicit stats into pseudo totals for more accurate searches:
+
+  **Core Feature:**
+
+  - Combines matching implicit and explicit stats during search filter creation only
+  - Item preview continues to show individual stats unchanged
+  - Example: `+28% to Lightning Resistance (implicit)` + `+36% to Lightning Resistance` → `+64% total to Lightning Resistance`
+
+  **Supported Stat Categories:**
+
+  - **Elemental Resistances**: Fire, Cold, Lightning, Chaos
+  - **Core Attributes**: Strength, Dexterity, Intelligence, All Attributes
+  - **Energy Shield**: Maximum Energy Shield and Energy Shield from Body Armour
+  - **Critical Stats**: Critical Hit Chance and Critical Damage Bonus
+
+  **Technical Implementation:**
+
+  - Added `combineCompatibleStats` function with intelligent pattern matching
+  - Regex-based stat parsing with flexible whitespace and optional + prefix handling
+  - Preserves original stats in item display while using combined totals for search accuracy
+  - Comprehensive integration testing to ensure reliability
+
+  This addresses a major usability gap where users had to manually calculate total resistance/attribute values when searching for items with both implicit and explicit modifiers. The feature seamlessly integrates with existing pseudo stat mappings to provide more accurate and user-friendly search filtering.
+
+- 3158960: Add support for Area of Effect stat modifiers
+
+  - Add `#% increased Area of Effect` stat mapping for generic area of effect scaling
+  - Add `#% increased Area of Effect for Attacks per 10 Intelligence` stat mapping for intelligence-scaling AoE
+  - Add `#% increased Area of Effect of Curses` stat mapping for curse-specific area effects
+
+- 3158960: Add support for Table 11: MINION STATS
+
+  Implements comprehensive minion stat mappings including:
+
+  **High Priority Stats:**
+
+  - `Minions deal #% increased Damage` - Core minion damage scaling
+  - `Minions have #% increased maximum Life` - Essential minion survivability
+  - `Minions have #% increased Attack and Cast Speed` - Critical minion speed scaling
+  - `Minions have #% to all Elemental Resistances` - Core minion defense
+
+  **Medium Priority Stats:**
+
+  - `Minions have #% additional Physical Damage Reduction` - Physical damage mitigation
+  - `Minions have #% increased Critical Damage Bonus` - Minion critical strike scaling
+  - `Minions have #% increased Critical Hit Chance` - Minion critical chance
+  - `#% increased Minion Accuracy Rating` - Minion hit chance
+  - `Minions have #% to Chaos Resistance` - Chaos damage protection
+
+  **Advanced Stats:**
+
+  - `Minions gain #% of their maximum Life as Extra maximum Energy Shield` - Hybrid minion defense
+  - `Minions Revive #% faster` - Minion revival speed
+
+  This addresses a major gap in minion build support, bringing minion stat coverage from 0% to comprehensive coverage of all essential minion modifiers. All 11 new stat mappings include proper regex patterns with support for optional + prefixes and flexible whitespace handling.
+
+- 3158960: Add support for Damage Additions scaling stat
+
+  - Add `Adds # to # Lightning Damage to Attacks per 20 Intelligence` stat mapping
+
+- 3158960: Add support for Critical Hit Modifiers
+
+  - Add `#% increased Critical Spell Damage Bonus` stat mapping for spell-specific critical damage
+  - Add `#% increased Critical Damage Bonus with Spears` stat mapping for weapon-specific critical damage
+
+- 3158960: Add support Attack & Cast Speed modifiers
+
+  - Add `#% increased Attack Speed per 10 Dexterity` and `per 20 Dexterity` scaling stats
+  - Add weapon-specific attack speed modifiers:
+    - `#% increased Attack Speed with Bows`
+    - `#% increased Attack Speed with Crossbows`
+    - `#% increased Attack Speed with Quarterstaves`
+    - `#% increased Attack Speed with Spears`
+
+- 3158960: Add support for Defense Stats hybrid modifiers
+
+  - Add `#% increased Evasion and Energy Shield` stat mapping for hybrid defense
+  - Add `#% increased Armour, Evasion and Energy Shield` stat mapping for triple hybrid defense
+  - Add `#% increased Global Defences` stat mapping for global defense modifier
+  - Add `#% increased Defences from Equipped Shield` stat mapping for shield-specific builds
+
+- 3158960: Add support for Accuracy & Stun stat modifiers
+
+  - Add `#% increased Accuracy Rating` stat mapping for generic accuracy scaling
+  - Add `#% increased Accuracy Rating with Bows` stat mapping for bow-specific builds
+  - Add `#% increased Stun Threshold` stat mapping for stun defense
+  - Add `#% increased Stun Duration` stat mapping for offensive stunning
+  - Add `#% increased Stun Buildup` stat mapping for generic stun mechanics
+  - Add `#% increased Stun Buildup with Maces` stat mapping for mace-specific builds
+  - Add `#% increased Stun Threshold if you haven't been Stunned Recently` stat mapping for conditional stun defense
+
+- 3158960: Add support for Presence/Aura Effects stat modifiers
+
+  - Add `#% increased Presence Area of Effect` stat mapping (USER REPORTED feature)
+  - Add `Allies in your Presence deal #% increased Damage` stat mapping for core presence builds
+  - Add `Allies in your Presence Regenerate # Life per second` stat mapping for presence healing
+  - Add `Allies in your Presence have # to Accuracy Rating` stat mapping for presence accuracy
+  - Add `Allies in your Presence have #% increased Attack Speed` stat mapping for presence speed
+  - Add `Allies in your Presence have #% increased Cast Speed` stat mapping for presence speed
+  - Add `Allies in your Presence have #% increased Critical Hit Chance` stat mapping for presence crit
+  - Add `Allies in your Presence have #% increased Critical Damage Bonus` stat mapping for presence crit
+  - Add `Allies in your Presence have #% to all Elemental Resistances` stat mapping for presence defense
+  - Add `Allies in your Presence deal # to # added Attack Cold Damage` stat mapping for presence damage
+  - Add `Allies in your Presence deal # to # added Attack Fire Damage` stat mapping for presence damage
+  - Add `Allies in your Presence deal # to # added Attack Lightning Damage` stat mapping for presence damage
+  - Add `Allies in your Presence deal # to # added Attack Physical Damage` stat mapping for presence damage
+  - Add `Enemies in your Presence are Ignited as though dealt # Base Fire Damage` stat mapping for presence offense
+  - Add `Enemies in your Presence have #% to Fire Resistance` stat mapping for presence debuff
+  - Add `#% of your Base Life Regeneration is granted to Allies in your Presence` stat mapping for presence sharing
+  - Add `Share Charges with Allies in your Presence` stat mapping for charge sharing
+
+### Patch Changes
+
+- ee8eb7b: Add support for missing damage modifier stats:
+
+  - `#% increased Chaos Damage`
+  - `#% increased Damage` (generic)
+  - `#% increased Global Physical Damage`
+  - `#% increased Spell Physical Damage`
+
 ## 0.3.5
 
 ### Patch Changes
