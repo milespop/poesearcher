@@ -364,6 +364,10 @@ const POE_STAT_MAPPINGS = {
       filterText: '#% increased Critical Hit Chance',
       group: 'explicit' as const,
       extractValue: (statText: string): number | null => {
+        // Only match if it doesn't have "for Attacks" or "for Spells" after
+        if (statText.includes('for Attacks') || statText.includes('for Spells')) {
+          return null;
+        }
         const match = statText.match(/(\d+)%\s+increased Critical Hit Chance/);
         return match ? parseInt(match[1]) : null;
       }
@@ -372,6 +376,10 @@ const POE_STAT_MAPPINGS = {
       filterText: '#% increased Critical Damage Bonus',
       group: 'explicit' as const,
       extractValue: (statText: string): number | null => {
+        // Only match if it doesn't have "for Attack Damage" or other specific versions after
+        if (statText.includes('for Attack Damage')) {
+          return null;
+        }
         const match = statText.match(/(\d+)%\s+increased Critical Damage Bonus/);
         return match ? parseInt(match[1]) : null;
       }
@@ -740,6 +748,60 @@ const POE_STAT_MAPPINGS = {
       extractValue: (statText: string): number | null => {
         const match = statText.match(/Leech (\d+(?:\.\d+)?)% of Physical Attack Damage as Mana/);
         return match ? parseFloat(match[1]) : null;
+      }
+    },
+
+    // === LIFE/MANA ON KILL STATS ===
+    'Gain # Life per Enemy Killed': {
+      filterText: 'Gain # Life per Enemy Killed',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/Gain (\d+) Life per Enemy Killed/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+
+    // === PHYSICAL DAMAGE LEECH STATS ===
+    'Leeches.*Physical Damage as Mana': {
+      filterText: 'Leeches #% of Physical Damage as Mana',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/Leeches (\d+(?:\.\d+)?)% of Physical Damage as Mana/);
+        return match ? parseFloat(match[1]) : null;
+      }
+    },
+
+    // === EXTRA DAMAGE CONVERSION STATS ===
+    'Gain.*of Damage as Extra Cold Damage': {
+      filterText: 'Gain #% of Damage as Extra Cold Damage',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/Gain (\d+)% of Damage as Extra Cold Damage/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    'Gain.*of Damage as Extra Lightning Damage': {
+      filterText: 'Gain #% of Damage as Extra Lightning Damage',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/Gain (\d+)% of Damage as Extra Lightning Damage/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    'Gain.*of Damage as Extra Fire Damage': {
+      filterText: 'Gain #% of Damage as Extra Fire Damage',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/Gain (\d+)% of Damage as Extra Fire Damage/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    'Gain.*of Damage as Extra Chaos Damage': {
+      filterText: 'Gain #% of Damage as Extra Chaos Damage',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/Gain (\d+)% of Damage as Extra Chaos Damage/);
+        return match ? parseInt(match[1]) : null;
       }
     }
   } as const satisfies Record<string, StatMapping>

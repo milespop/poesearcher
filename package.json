@@ -34,7 +34,6 @@
     "url": "git+https://github.com/milespop/poesearcher.git"
   },
   "author": "",
-  "license": "ISC",
   "type": "commonjs",
   "bugs": {
     "url": "https://github.com/milespop/poesearcher/issues"

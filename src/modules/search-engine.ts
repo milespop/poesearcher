@@ -168,7 +168,7 @@ async function setItemType(parsed: ParsedItem): Promise<void> {
 
     logger.verbose(`Found category dropdown with placeholder: "${multiselectInput.placeholder}"`);
 
-    // Type the category name
+    // Type the category name to filter options
     multiselectInput.focus();
     multiselectInput.value = categoryName;
     multiselectInput.dispatchEvent(new Event('input', { bubbles: true }));
@@ -177,18 +177,40 @@ async function setItemType(parsed: ParsedItem): Promise<void> {
 
     logger.verbose(`Typing category: "${categoryName}"`);
 
-    // Press Enter to select
-    const enterEvent = new KeyboardEvent('keydown', {
-      key: 'Enter',
-      code: 'Enter',
-      keyCode: 13,
-      which: 13,
-      bubbles: true,
-      cancelable: true
-    });
+    // Wait for dropdown to appear and find exact match
+    await new Promise(resolve => setTimeout(resolve, DELAYS.setItemType));
 
-    multiselectInput.dispatchEvent(enterEvent);
-    logger.verbose('Pressing Enter to select category');
+    // Find the exact option by text content
+    const dropdownOptions = document.querySelectorAll('.multiselect__option');
+    let exactOption: Element | null = null;
+
+    for (const option of dropdownOptions) {
+      const optionText = option.textContent?.trim();
+      if (optionText === categoryName) {
+        exactOption = option;
+        logger.verbose(`Found exact match for "${categoryName}"`);
+        break;
+      }
+    }
+
+    if (exactOption) {
+      // Click the exact option
+      (exactOption as HTMLElement).click();
+      logger.verbose(`Clicked exact option: "${categoryName}"`);
+    } else {
+      // Fallback to Enter key if exact option not found
+      logger.warn(`Exact option not found for "${categoryName}", using Enter key fallback`);
+      const enterEvent = new KeyboardEvent('keydown', {
+        key: 'Enter',
+        code: 'Enter',
+        keyCode: 13,
+        which: 13,
+        bubbles: true,
+        cancelable: true
+      });
+      multiselectInput.dispatchEvent(enterEvent);
+      logger.verbose('Pressing Enter to select category');
+    }
 
     await new Promise(resolve => setTimeout(resolve, DELAYS.setItemType));
     logger.debug(`Item category set to: "${categoryName}"`);
