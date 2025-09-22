@@ -39,12 +39,33 @@ jobs:
         with:
           # This expects you to have a script called version which runs `changeset version` and updates the `package.json` version
           version: npm run changeset:version
-          # This expects you to have a script called release which builds and packages your extension
-          publish: npm run changeset:release
-          title: "Release: v$NEXT_VERSION"
-          commit: "chore: release v$NEXT_VERSION"
+          # Build extension but don't publish to npm - this is a Chrome extension
+          publish: echo "Skipping npm publish - this is a Chrome extension"
+          commit: "chore: release packages"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update PR Title with Version
+        if: steps.changesets.outputs.hasChangesets == 'true'
+        run: |
+          # Get the new version from package.json after changesets processed it
+          NEW_VERSION=$(node -p "require('./package.json').version")
+
+          # Get the PR number from the changesets output
+          PR_NUMBER=$(gh pr list --head changeset-release/main --json number --jq '.[0].number')
+
+          if [ ! -z "$PR_NUMBER" ]; then
+            gh pr edit $PR_NUMBER --title "Release: v$NEW_VERSION"
+            echo "Updated PR #$PR_NUMBER title to: Release: v$NEW_VERSION"
+          else
+            echo "No release PR found to update"
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build Extension for Release
+        if: steps.changesets.outputs.published == 'true'
+        run: npm run changeset:release
 
       - name: Create Git Tag
         if: steps.changesets.outputs.published == 'true'
