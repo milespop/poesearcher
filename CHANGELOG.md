@@ -1,5 +1,11 @@
 # poesearcher
 
+## 0.3.3
+
+### Patch Changes
+
+- 6f4feb7: ADd some extra support of 'for Spells' selectors, and staff/quarterstaff category
+
 ## 0.3.2
 
 ### Patch Changes
