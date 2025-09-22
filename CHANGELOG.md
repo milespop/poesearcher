@@ -1,5 +1,15 @@
 # poesearcher
 
+## 0.2.1
+
+### Patch Changes
+
+- 2beee83: Demo release to test GitHub workflow
+
+  - Demonstrate Changeset CLI GitHub workflow
+  - Test automated release creation
+  - Verify GitHub release with packaged extension
+
 ## 0.2.0
 
 ### Minor Changes
