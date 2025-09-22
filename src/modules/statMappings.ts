@@ -107,6 +107,40 @@ const POE_STAT_MAPPINGS = {
       }
     },
 
+    // === MAXIMUM RESISTANCES ===
+    'to Maximum Cold Resistance': {
+      filterText: '#% to Maximum Cold Resistance',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/\+?(\d+)%\s+to Maximum Cold Resistance/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    'to Maximum Fire Resistance': {
+      filterText: '#% to Maximum Fire Resistance',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/\+?(\d+)%\s+to Maximum Fire Resistance/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    'to Maximum Lightning Resistance': {
+      filterText: '#% to Maximum Lightning Resistance',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/\+?(\d+)%\s+to Maximum Lightning Resistance/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    'maximum Player Resistances': {
+      filterText: '#% maximum Player Resistances',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)%\s+maximum Player Resistances/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+
     // === EXPLICIT RESISTANCE STATS ===
     'explicit to Fire Resistance': {
       filterText: '#% to Fire Resistance',
