@@ -1,5 +1,16 @@
 # poesearcher
 
+## 0.3.5
+
+### Patch Changes
+
+- 399299c: Add support for maximum resistance stats:
+
+  - `#% to Maximum Cold Resistance`
+  - `#% to Maximum Fire Resistance`
+  - `#% to Maximum Lightning Resistance`
+  - `#% maximum Player Resistances`
+
 ## 0.3.4
 
 ### Patch Changes
