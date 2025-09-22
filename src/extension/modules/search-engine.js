@@ -1,7 +1,7 @@
-// POE Automation Module
-// Handles POE trade site automation and DOM manipulation
+// POE Search Engine Module
+// Handles POE trade site search operations and DOM manipulation
 
-// Main search automation function
+// Main search engine function
 async function performSearch(parsed, scalePercent = 100) {
   console.log(`🔍 Performing search with item data:`, parsed)
   console.log(`🎚️ Scale: ${scalePercent}%`)

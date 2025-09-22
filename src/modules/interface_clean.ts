@@ -1117,7 +1117,7 @@ export class POESearcherInterface {
         const target = e.target as HTMLSelectElement;
         const selectedProfile = target.value as 'safe' | 'lightning';
 
-        // Update automation module with new profile
+        // Update search engine module with new profile
         if ((window as any).updateDelayProfile) {
           (window as any).updateDelayProfile(selectedProfile);
         }

@@ -1,5 +1,5 @@
 // PoE2 Searcher - Main Content Script
-// Initializes the POE trade automation interface
+// Initializes the POE trade search interface
 
 // Main execution
 (async function() {

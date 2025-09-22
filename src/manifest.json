@@ -21,7 +21,7 @@
       "js": [
         "src/modules/statMappings.js",
         "src/modules/itemParser.js",
-        "src/modules/automation.js",
+        "src/modules/search-engine.js",
         "src/modules/interface_clean.js",
         "src/content.js"
       ],

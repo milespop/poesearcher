@@ -50,7 +50,7 @@ dist/
 │   ├── content-[hash].js      # Main content script
 │   ├── statMappings-[hash].js # Stat mapping logic (~19KB)
 │   ├── itemParser-[hash].js   # Item parsing (~2.6KB)
-│   ├── automation-[hash].js   # DOM automation (~10KB)
+│   ├── search-engine-[hash].js   # DOM search engine (~10KB)
 │   ├── interface_clean-[hash].js # UI interface (~33KB)
 │   └── *-loader-[hash].js     # Dynamic import loaders
 └── .vite/                     # Vite metadata

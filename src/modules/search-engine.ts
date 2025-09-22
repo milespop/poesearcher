@@ -1,10 +1,10 @@
-// POE Automation Module
-// Handles POE trade site automation and DOM manipulation
+// POE Search Engine Module
+// Handles POE trade site search operations and DOM manipulation
 
 import type { ParsedItem } from './itemParser';
 import { createLogger } from './logger';
 
-// Type definitions for automation
+// Type definitions for search engine
 export interface SearchResult {
   success: boolean;
   error?: string;
@@ -67,7 +67,7 @@ let CURRENT_PROFILE: keyof typeof DELAY_PROFILES = 'safe';
 let DELAYS: DelayConfig = DELAY_PROFILES[CURRENT_PROFILE];
 
 // Create module logger
-const logger = createLogger('Automation');
+const logger = createLogger('SearchEngine');
 
 // Log the current profile for debugging
 logger.info(`Using delay profile: ${CURRENT_PROFILE}`, DELAYS);
@@ -82,7 +82,7 @@ function updateDelayProfile(newProfile: keyof typeof DELAY_PROFILES): void {
 // Expose the function globally for interface access
 (window as any).updateDelayProfile = updateDelayProfile;
 
-// Main search automation function
+// Main search engine function
 export async function performSearch(parsed: ParsedItem, scalePercent: number = 100): Promise<SearchResult> {
   logger.info('Performing search with item data:', parsed);
   logger.info(`Scale: ${scalePercent}%`);

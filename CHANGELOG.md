@@ -16,13 +16,13 @@
   - Added structured logging module for better debugging and monitoring
   - Enhanced error tracking and diagnostic capabilities
   - Improved development and troubleshooting experience
-  - Added logging across automation and interface modules
+  - Added logging across search engine and interface modules
 
 - Add minimize after search feature
 
   - Extension now minimizes browser window after performing a search
   - Improves user workflow by automatically reducing interface clutter
-  - Enhances automation experience for Path of Exile traders
+  - Enhances search experience for Path of Exile traders
 
 - UI refactoring and local variations support
 
@@ -35,7 +35,7 @@
 
 ### Minor Changes
 
-- Initial creation of POE Searcher Chrome extension with comprehensive trade automation functionality
+- Initial creation of POE Searcher Chrome extension with comprehensive trade search functionality
 
   - Implemented item text parsing with 113+ stat filters
   - Added automated search form filling for Path of Exile trade website

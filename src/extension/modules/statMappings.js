@@ -1,5 +1,5 @@
 // POE Stat Mappings Module
-// Defines all stat mappings for POE trade site automation
+// Defines all stat mappings for POE trade site search engine
 
 const POE_STAT_MAPPINGS = {
   mappings: {
