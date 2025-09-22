@@ -20,13 +20,20 @@
     {
       "matches": ["https://www.pathofexile.com/trade2/search/poe2/*"],
       "js": [
-        "modules/statMappings.js",
-        "modules/itemParser.js",
-        "modules/automation.js",
-        "modules/interface_clean.js",
-        "content.js"
+        "src/modules/statMappings.js",
+        "src/modules/itemParser.js",
+        "src/modules/automation.js",
+        "src/modules/interface_clean.js",
+        "src/content.js"
       ],
       "run_at": "document_end"
+    }
+  ],
+
+  "web_accessible_resources": [
+    {
+      "resources": ["search-icon.png"],
+      "matches": ["https://www.pathofexile.com/*"]
     }
   ]
 }

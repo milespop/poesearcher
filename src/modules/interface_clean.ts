@@ -1,37 +1,59 @@
 // POE Interface Module - Clean Material Design
 // Simple, polished interface following Material Design principles
 
-class POESearcherInterface {
-  constructor() {
-    this.container = null
-    this.isExpanded = false
-    this.isExecuting = false
-    this._pasteHandler = null
-    this._searchHandler = null
-  }
+import type { ParsedItem, ValidationResult } from './itemParser';
+import { createLogger } from './logger';
+
+// Type definitions for interface
+interface StorageResult {
+  colorblindMode?: boolean;
+  lastItem?: string;
+  scaleValue?: string;
+  delayProfile?: 'safe' | 'lightning';
+  logLevel?: number;
+}
+
+interface StatMapping {
+  filterText: string;
+  value?: number;
+  group: string;
+}
+
+export class POESearcherInterface {
+  private container: HTMLElement | null = null;
+  private logger = createLogger('Interface');
+  private isExpanded: boolean = false;
+  private isExecuting: boolean = false;
+  private _pasteHandler: ((e: ClipboardEvent) => void) | null = null;
+  private _searchHandler: ((e: MouseEvent) => void) | null = null;
+  private _scaleHandler: ((e: Event) => void) | null = null;
+  private _optionsHandler: (() => void) | null = null;
+  private _colorblindHandler: ((e: Event) => void) | null = null;
+  private _delayProfileHandler: ((e: Event) => void) | null = null;
+  private _logLevelHandler: ((e: Event) => void) | null = null;
 
   // Initialize the interface
-  async init() {
-    console.log('🎯 PoE2 Searcher initializing...')
+  async init(): Promise<void> {
+    this.logger.info('PoE2 Searcher initializing...');
 
-    this.loadStyles()
-    this.createInterface()
-    this.setupEventHandlers()
+    this.loadStyles();
+    this.createInterface();
+    this.setupEventHandlers();
 
-    console.log('✅ PoE2 Searcher ready!')
+    this.logger.success('PoE2 Searcher ready!');
   }
 
   // Load clean custom styles
-  loadStyles() {
-    if (document.querySelector('#poe-clean-styles')) return
+  private loadStyles(): void {
+    if (document.querySelector('#poe-clean-styles')) return;
 
-    const styles = document.createElement('style')
-    styles.id = 'poe-clean-styles'
+    const styles = document.createElement('style');
+    styles.id = 'poe-clean-styles';
     styles.textContent = `
       .poe-container {
         position: fixed !important;
         top: 2.5rem !important;
-        right: 1rem !important;
+        right: 0.5rem !important;
         z-index: 2147483647 !important;
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
       }
@@ -51,6 +73,22 @@ class POESearcherInterface {
         color: white !important;
         font-size: 20px !important;
         backdrop-filter: blur(20px) !important;
+        position: relative !important;
+      }
+
+      .poe-fab .magnifying-glass {
+        position: absolute !important;
+        top: 4px !important;
+        right: 4px !important;
+        font-size: 12px !important;
+        background: rgba(255,255,255,0.2) !important;
+        border-radius: 50% !important;
+        width: 18px !important;
+        height: 18px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        backdrop-filter: blur(10px) !important;
       }
 
       .poe-fab:hover {
@@ -357,6 +395,86 @@ class POESearcherInterface {
         font-size: 12px !important;
         text-align: center !important;
         line-height: 12px !important;
+      }
+
+      .poe-setting-group {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        padding: 12px 0 !important;
+        border-bottom: 1px solid #f0f0f0 !important;
+      }
+
+      .poe-setting-group:last-child {
+        border-bottom: none !important;
+      }
+
+      .poe-setting-label {
+        font-size: 14px !important;
+        color: #333 !important;
+        font-weight: 500 !important;
+        margin: 0 !important;
+        flex: 1 !important;
+      }
+
+      .poe-checkbox-container {
+        position: relative !important;
+        cursor: pointer !important;
+      }
+
+      .poe-checkbox {
+        position: absolute !important;
+        opacity: 0 !important;
+        cursor: pointer !important;
+      }
+
+      .poe-checkbox-custom {
+        display: block !important;
+        width: 44px !important;
+        height: 24px !important;
+        background: #e5e7eb !important;
+        border-radius: 12px !important;
+        position: relative !important;
+        transition: all 0.3s ease !important;
+        cursor: pointer !important;
+      }
+
+      .poe-checkbox-custom::after {
+        content: '' !important;
+        position: absolute !important;
+        top: 2px !important;
+        left: 2px !important;
+        width: 20px !important;
+        height: 20px !important;
+        background: white !important;
+        border-radius: 50% !important;
+        transition: all 0.3s ease !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+      }
+
+      .poe-checkbox:checked + .poe-checkbox-custom {
+        background: #3b82f6 !important;
+      }
+
+      .poe-checkbox:checked + .poe-checkbox-custom::after {
+        transform: translateX(20px) !important;
+      }
+
+      .poe-delay-select {
+        flex: 1 !important;
+        padding: 6px 8px !important;
+        border: 1px solid #d1d5db !important;
+        border-radius: 6px !important;
+        font-size: 13px !important;
+        background: white !important;
+        color: #333 !important;
+        cursor: pointer !important;
+      }
+
+      .poe-delay-select:focus {
+        outline: none !important;
+        border-color: #3b82f6 !important;
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1) !important;
       }
 
       .poe-stat-checkbox-label {
@@ -698,39 +816,40 @@ class POESearcherInterface {
         font-weight: inherit !important;
         letter-spacing: -0.1px !important;
       }
-    `
-    document.head.appendChild(styles)
+    `;
+    document.head.appendChild(styles);
   }
 
   // Create the main interface container
-  createInterface() {
-    const existing = document.querySelector('#poe-searcher-interface')
-    if (existing) existing.remove()
+  private createInterface(): void {
+    const existing = document.querySelector('#poe-searcher-interface');
+    if (existing) existing.remove();
 
-    this.container = document.createElement('div')
-    this.container.id = 'poe-searcher-interface'
-    this.container.className = 'poe-container'
-    this.container.innerHTML = this.getCollapsedHTML()
+    this.container = document.createElement('div');
+    this.container.id = 'poe-searcher-interface';
+    this.container.className = 'poe-container';
+    this.container.innerHTML = this.getCollapsedHTML();
 
-    document.body.appendChild(this.container)
+    document.body.appendChild(this.container);
 
-    const fab = this.container.querySelector('.poe-fab')
+    const fab = this.container.querySelector<HTMLButtonElement>('.poe-fab');
     if (fab) {
-      fab.addEventListener('click', () => this.toggleInterface())
+      fab.addEventListener('click', () => this.toggleInterface());
     }
   }
 
   // Get collapsed interface HTML (Clean FAB)
-  getCollapsedHTML() {
+  private getCollapsedHTML(): string {
     return `
       <button class="poe-fab" aria-label="PoE2 Searcher" title="PoE2 Searcher">
-        🔍
+        <img src="${chrome.runtime.getURL('search-icon.png')}" alt="Search" style="width: 20px; height: 20px;">
+        <div class="magnifying-glass">🔍</div>
       </button>
-    `
+    `;
   }
 
   // Get expanded interface HTML (Clean Card)
-  getExpandedHTML() {
+  private getExpandedHTML(): string {
     return `
       <div class="poe-card">
         <div class="poe-header">
@@ -743,10 +862,31 @@ class POESearcherInterface {
 
         <div id="poe-settings" class="poe-settings" style="display: none;">
           <div class="poe-settings-content">
-            <label class="poe-checkbox-label">
-              <input type="checkbox" id="poe-colorblind-mode" class="poe-checkbox">
-              <span class="poe-checkbox-text">Colorblind-friendly mode</span>
-            </label>
+            <div class="poe-setting-group">
+              <label class="poe-setting-label">Colorblind Mode:</label>
+              <label class="poe-checkbox-container">
+                <input type="checkbox" id="poe-colorblind-mode" class="poe-checkbox">
+                <span class="poe-checkbox-custom"></span>
+              </label>
+            </div>
+            <div class="poe-setting-group">
+              <label class="poe-setting-label">Log Level:</label>
+              <select id="poe-log-level" class="poe-delay-select">
+                <option value="0">Off</option>
+                <option value="1">Errors Only</option>
+                <option value="2">Warnings</option>
+                <option value="3">Info</option>
+                <option value="4">Debug</option>
+                <option value="5">Verbose</option>
+              </select>
+            </div>
+            <div class="poe-setting-group">
+              <label class="poe-setting-label">Speed Profile:</label>
+              <select id="poe-delay-profile" class="poe-delay-select">
+                <option value="safe">Safe (Recommended)</option>
+                <option value="lightning">Lightning</option>
+              </select>
+            </div>
           </div>
         </div>
 
@@ -785,369 +925,466 @@ class POESearcherInterface {
           </button>
         </div>
       </div>
-    `
+    `;
   }
 
   // Toggle interface
-  toggleInterface() {
-    this.isExpanded = !this.isExpanded
+  private toggleInterface(): void {
+    this.isExpanded = !this.isExpanded;
 
     if (this.isExpanded) {
-      console.log('📖 Interface expanded')
-      this.container.innerHTML = this.getExpandedHTML()
-      this.setupEventHandlers()
+      this.logger.debug('Interface expanded');
+      this.container!.innerHTML = this.getExpandedHTML();
+      this.setupEventHandlers();
     } else {
-      console.log('📕 Interface collapsed')
-      this.clearEventHandlers()
-      this.container.innerHTML = this.getCollapsedHTML()
+      this.logger.debug('Interface collapsed');
+      this.clearEventHandlers();
+      this.container!.innerHTML = this.getCollapsedHTML();
     }
 
     // Options button
-    const optionsBtn = this.container.querySelector('.poe-options-btn')
-    const settingsPanel = this.container.querySelector('#poe-settings')
+    const optionsBtn = this.container!.querySelector<HTMLButtonElement>('.poe-options-btn');
+    const settingsPanel = this.container!.querySelector<HTMLElement>('#poe-settings');
 
     if (optionsBtn && settingsPanel) {
       this._optionsHandler = () => {
-        const isVisible = settingsPanel.style.display !== 'none'
-        settingsPanel.style.display = isVisible ? 'none' : 'block'
-      }
-      optionsBtn.addEventListener('click', this._optionsHandler)
+        const isVisible = settingsPanel.style.display !== 'none';
+        settingsPanel.style.display = isVisible ? 'none' : 'block';
+      };
+      optionsBtn.addEventListener('click', this._optionsHandler);
     }
 
     // Colorblind mode checkbox
-    const colorblindCheckbox = this.container.querySelector('#poe-colorblind-mode')
+    const colorblindCheckbox = this.container!.querySelector<HTMLInputElement>('#poe-colorblind-mode');
 
     if (colorblindCheckbox) {
-      this._colorblindHandler = (e) => {
-        const isEnabled = e.target.checked
+      this._colorblindHandler = (e: Event) => {
+        const target = e.target as HTMLInputElement;
+        const isEnabled = target.checked;
 
         // Add/remove colorblind class to the entire card
-        const card = this.container.querySelector('.poe-card')
+        const card = this.container!.querySelector<HTMLElement>('.poe-card');
         if (card) {
           if (isEnabled) {
-            card.classList.add('poe-colorblind-mode')
+            card.classList.add('poe-colorblind-mode');
           } else {
-            card.classList.remove('poe-colorblind-mode')
+            card.classList.remove('poe-colorblind-mode');
           }
         }
 
         // Save preference
         try {
-          chrome.storage.local.set({ colorblindMode: isEnabled })
-        } catch (e) {}
-      }
+          chrome.storage.local.set({ colorblindMode: isEnabled });
+        } catch (e) {
+          // Ignore chrome API errors
+        }
+      };
 
-      colorblindCheckbox.addEventListener('change', this._colorblindHandler)
+      colorblindCheckbox.addEventListener('change', this._colorblindHandler);
 
       // Load saved preference
       try {
-        chrome.storage.local.get(['colorblindMode'], (result) => {
+        chrome.storage.local.get(['colorblindMode'], (result: StorageResult) => {
           if (result.colorblindMode) {
-            colorblindCheckbox.checked = true
-            const card = this.container.querySelector('.poe-card')
+            colorblindCheckbox.checked = true;
+            const card = this.container!.querySelector<HTMLElement>('.poe-card');
             if (card) {
-              card.classList.add('poe-colorblind-mode')
+              card.classList.add('poe-colorblind-mode');
             }
           }
-        })
-      } catch (e) {}
+        });
+      } catch (e) {
+        // Ignore chrome API errors
+      }
+    }
+
+    // Delay profile select
+    const delayProfileSelect = this.container!.querySelector<HTMLSelectElement>('#poe-delay-profile');
+
+    if (delayProfileSelect) {
+      this._delayProfileHandler = (e: Event) => {
+        const target = e.target as HTMLSelectElement;
+        const selectedProfile = target.value as 'safe' | 'lightning';
+
+        // Update automation module with new profile
+        if ((window as any).updateDelayProfile) {
+          (window as any).updateDelayProfile(selectedProfile);
+        }
+
+        // Save to storage
+        try {
+          chrome.storage.local.set({ delayProfile: selectedProfile });
+        } catch (e) {
+          // Ignore chrome API errors
+        }
+
+        this.logger.info(`Delay profile changed to: ${selectedProfile}`);
+      };
+
+      delayProfileSelect.addEventListener('change', this._delayProfileHandler);
+
+      // Load saved setting
+      try {
+        chrome.storage.local.get(['delayProfile'], (result: StorageResult) => {
+          const savedProfile = result.delayProfile || 'safe'; // Default to safe
+          delayProfileSelect.value = savedProfile;
+
+          // Apply the saved profile
+          if ((window as any).updateDelayProfile) {
+            (window as any).updateDelayProfile(savedProfile);
+          }
+        });
+      } catch (e) {
+        // Ignore chrome API errors
+      }
+    }
+
+    // Log level dropdown
+    const logLevelSelect = this.container!.querySelector<HTMLSelectElement>('#poe-log-level');
+
+    if (logLevelSelect) {
+      this._logLevelHandler = (e: Event) => {
+        const target = e.target as HTMLSelectElement;
+        const logLevel = parseInt(target.value, 10);
+
+        // Update logger setting
+        if ((window as any).POELogger) {
+          (window as any).POELogger.setLogLevel(logLevel);
+        }
+
+        const levelNames = ['Off', 'Errors Only', 'Warnings', 'Info', 'Debug', 'Verbose'];
+        this.logger.info(`Log level set to: ${levelNames[logLevel] || 'Unknown'}`);
+      };
+
+      logLevelSelect.addEventListener('change', this._logLevelHandler);
+
+      // Load saved setting
+      try {
+        chrome.storage.local.get(['logLevel'], (result: StorageResult) => {
+          const logLevel = result.logLevel !== undefined ? result.logLevel : 0; // Default to OFF
+          logLevelSelect.value = logLevel.toString();
+
+          // Apply the saved setting to logger
+          if ((window as any).POELogger) {
+            (window as any).POELogger.setLogLevel(logLevel);
+          }
+        });
+      } catch (e) {
+        // Ignore chrome API errors
+      }
     }
 
     // Re-setup toggle handlers
-    const fab = this.container.querySelector('.poe-fab')
-    const closeBtn = this.container.querySelector('.poe-close-btn')
+    const fab = this.container!.querySelector<HTMLButtonElement>('.poe-fab');
+    const closeBtn = this.container!.querySelector<HTMLButtonElement>('.poe-close-btn');
 
-    if (fab) fab.addEventListener('click', () => this.toggleInterface())
-    if (closeBtn) closeBtn.addEventListener('click', () => this.toggleInterface())
+    if (fab) fab.addEventListener('click', () => this.toggleInterface());
+    if (closeBtn) closeBtn.addEventListener('click', () => this.toggleInterface());
   }
 
   // Clear event handlers
-  clearEventHandlers() {
+  private clearEventHandlers(): void {
     if (this._pasteHandler) {
-      const textarea = this.container.querySelector('#poe-item-input')
-      if (textarea) textarea.removeEventListener('paste', this._pasteHandler)
+      const textarea = this.container!.querySelector<HTMLTextAreaElement>('#poe-item-input');
+      if (textarea) textarea.removeEventListener('paste', this._pasteHandler);
     }
     if (this._searchHandler) {
-      const searchBtn = this.container.querySelector('#poe-search-btn')
-      if (searchBtn) searchBtn.removeEventListener('click', this._searchHandler)
+      const searchBtn = this.container!.querySelector<HTMLButtonElement>('#poe-search-btn');
+      if (searchBtn) searchBtn.removeEventListener('click', this._searchHandler as EventListener);
     }
     if (this._scaleHandler) {
-      const scaleSlider = this.container.querySelector('#poe-scale-slider')
-      if (scaleSlider) scaleSlider.removeEventListener('input', this._scaleHandler)
+      const scaleSlider = this.container!.querySelector<HTMLInputElement>('#poe-scale-slider');
+      if (scaleSlider) scaleSlider.removeEventListener('input', this._scaleHandler);
     }
     if (this._optionsHandler) {
-      const optionsBtn = this.container.querySelector('.poe-options-btn')
-      if (optionsBtn) optionsBtn.removeEventListener('click', this._optionsHandler)
+      const optionsBtn = this.container!.querySelector<HTMLButtonElement>('.poe-options-btn');
+      if (optionsBtn) optionsBtn.removeEventListener('click', this._optionsHandler);
     }
     if (this._colorblindHandler) {
-      const colorblindCheckbox = this.container.querySelector('#poe-colorblind-mode')
-      if (colorblindCheckbox) colorblindCheckbox.removeEventListener('change', this._colorblindHandler)
+      const colorblindCheckbox = this.container!.querySelector<HTMLInputElement>('#poe-colorblind-mode');
+      if (colorblindCheckbox) colorblindCheckbox.removeEventListener('change', this._colorblindHandler);
+    }
+
+    if (this._delayProfileHandler) {
+      const delayProfileSelect = this.container!.querySelector<HTMLSelectElement>('#poe-delay-profile');
+      if (delayProfileSelect) delayProfileSelect.removeEventListener('change', this._delayProfileHandler);
+    }
+
+    if (this._logLevelHandler) {
+      const logLevelSelect = this.container!.querySelector<HTMLSelectElement>('#poe-log-level');
+      if (logLevelSelect) logLevelSelect.removeEventListener('change', this._logLevelHandler);
     }
   }
 
   // Setup event handlers
-  setupEventHandlers() {
-    if (!this.isExpanded) return
+  private setupEventHandlers(): void {
+    if (!this.isExpanded) return;
 
-    this.clearEventHandlers()
+    this.clearEventHandlers();
 
-    const searchBtn = this.container.querySelector('#poe-search-btn')
-    const textarea = this.container.querySelector('#poe-item-input')
+    const searchBtn = this.container!.querySelector<HTMLButtonElement>('#poe-search-btn');
+    const textarea = this.container!.querySelector<HTMLTextAreaElement>('#poe-item-input');
 
     // Auto-parse on paste
-    this._pasteHandler = (e) => {
+    this._pasteHandler = (_e: ClipboardEvent) => {
       setTimeout(() => {
-        const text = textarea.value.trim()
+        const text = textarea!.value.trim();
         if (!text) {
-          this.updateStatus('Please paste item data', 'warning')
-          this.hidePreview()
-          return
+          this.updateStatus('Please paste item data', 'warning');
+          this.hidePreview();
+          return;
         }
 
-        const validation = window.validatePOEItemFormat(text)
+        const validation = (window as any).validatePOEItemFormat(text) as ValidationResult;
         if (!validation.isValid) {
-          this.updateStatus(`Invalid format: ${validation.error}`, 'error')
-          this.hidePreview()
-          return
+          this.updateStatus(`Invalid format: ${validation.error}`, 'error');
+          this.hidePreview();
+          return;
         }
 
-        const parsed = window.parseItem(text)
-        this.updateStatus(`Parsed: ${parsed.itemClass} • ${parsed.rarity} • ${parsed.stats.length} stats`, 'success')
-        this.showPreview(parsed)
-      }, 100)
-    }
+        const parsed = (window as any).parseItem(text) as ParsedItem;
+        this.updateStatus(`Parsed: ${parsed.itemClass} • ${parsed.rarity} • ${parsed.stats.length} stats`, 'success');
+        this.showPreview(parsed);
+      }, 100);
+    };
 
     if (textarea) {
-      textarea.addEventListener('paste', this._pasteHandler)
+      textarea.addEventListener('paste', this._pasteHandler);
 
       // Load saved content
       try {
-        chrome.storage.local.get(['lastItem'], (result) => {
+        chrome.storage.local.get(['lastItem'], (result: StorageResult) => {
           if (result.lastItem) {
-            textarea.value = result.lastItem
-            const validation = window.validatePOEItemFormat(result.lastItem)
+            textarea.value = result.lastItem;
+            const validation = (window as any).validatePOEItemFormat(result.lastItem) as ValidationResult;
             if (validation.isValid) {
-              const parsed = window.parseItem(result.lastItem)
-              this.updateStatus(`Loaded: ${parsed.itemClass} • ${parsed.rarity} • ${parsed.stats.length} stats`, 'success')
-              this.showPreview(parsed)
+              const parsed = (window as any).parseItem(result.lastItem) as ParsedItem;
+              this.updateStatus(`Loaded: ${parsed.itemClass} • ${parsed.rarity} • ${parsed.stats.length} stats`, 'success');
+              this.showPreview(parsed);
             } else {
-              textarea.value = ''
-              chrome.storage.local.remove(['lastItem'])
+              textarea.value = '';
+              chrome.storage.local.remove(['lastItem']);
             }
           }
-        })
+        });
       } catch (e) {
-        console.log('Could not load saved item data')
+        this.logger.warn('Could not load saved item data');
       }
 
       // Auto-save
       textarea.addEventListener('input', () => {
         if (textarea.value.trim()) {
           try {
-            chrome.storage.local.set({ lastItem: textarea.value })
-          } catch (e) {}
+            chrome.storage.local.set({ lastItem: textarea.value });
+          } catch (e) {
+            // Ignore chrome API errors
+          }
         } else {
-          this.hidePreview()
+          this.hidePreview();
         }
-      })
+      });
     }
 
     // Scale slider
-    const scaleSlider = this.container.querySelector('#poe-scale-slider')
-    const scaleValue = this.container.querySelector('#poe-scale-value')
+    const scaleSlider = this.container!.querySelector<HTMLInputElement>('#poe-scale-slider');
+    const scaleValue = this.container!.querySelector<HTMLSpanElement>('#poe-scale-value');
 
     if (scaleSlider && scaleValue) {
-      this._scaleHandler = (e) => {
-        const value = e.target.value
-        scaleValue.textContent = `${value}%`
+      this._scaleHandler = (e: Event) => {
+        const target = e.target as HTMLInputElement;
+        const value = target.value;
+        scaleValue.textContent = `${value}%`;
 
         // Save scale preference
         try {
-          chrome.storage.local.set({ scaleValue: value })
-        } catch (e) {}
+          chrome.storage.local.set({ scaleValue: value });
+        } catch (e) {
+          // Ignore chrome API errors
+        }
 
         // Refresh preview if item is currently shown
-        const textarea = this.container.querySelector('#poe-item-input')
+        const textarea = this.container!.querySelector<HTMLTextAreaElement>('#poe-item-input');
         if (textarea && textarea.value.trim()) {
-          const validation = window.validatePOEItemFormat(textarea.value.trim())
+          const validation = (window as any).validatePOEItemFormat(textarea.value.trim()) as ValidationResult;
           if (validation.isValid) {
-            const parsed = window.parseItem(textarea.value.trim())
-            this.showPreview(parsed)
+            const parsed = (window as any).parseItem(textarea.value.trim()) as ParsedItem;
+            this.showPreview(parsed);
           }
         }
-      }
+      };
 
-      scaleSlider.addEventListener('input', this._scaleHandler)
+      scaleSlider.addEventListener('input', this._scaleHandler);
 
       // Load saved scale value
       try {
-        chrome.storage.local.get(['scaleValue'], (result) => {
+        chrome.storage.local.get(['scaleValue'], (result: StorageResult) => {
           if (result.scaleValue) {
-            scaleSlider.value = result.scaleValue
-            scaleValue.textContent = `${result.scaleValue}%`
+            scaleSlider.value = result.scaleValue;
+            scaleValue.textContent = `${result.scaleValue}%`;
           }
-        })
-      } catch (e) {}
+        });
+      } catch (e) {
+        // Ignore chrome API errors
+      }
     }
 
     // Search button
     if (searchBtn) {
       searchBtn.addEventListener('click', async () => {
-        const text = textarea.value.trim()
+        const text = textarea!.value.trim();
         if (!text) {
-          this.updateStatus('Please paste item data first', 'warning')
-          return
+          this.updateStatus('Please paste item data first', 'warning');
+          return;
         }
 
-        const validation = window.validatePOEItemFormat(text)
+        const validation = (window as any).validatePOEItemFormat(text) as ValidationResult;
         if (!validation.isValid) {
-          this.updateStatus(`Invalid format: ${validation.error}`, 'error')
-          return
+          this.updateStatus(`Invalid format: ${validation.error}`, 'error');
+          return;
         }
 
         try {
-          if (this.isExecuting) return
+          if (this.isExecuting) return;
 
-          this.isExecuting = true
-          searchBtn.disabled = true
+          this.isExecuting = true;
+          searchBtn.disabled = true;
 
-          const parsed = window.parseItem(text)
+          const parsed = (window as any).parseItem(text) as ParsedItem;
 
           // Get scale value
-          const scaleSlider = this.container.querySelector('#poe-scale-slider')
-          const scalePercent = scaleSlider ? parseInt(scaleSlider.value) : 100
+          const scaleSlider = this.container!.querySelector<HTMLInputElement>('#poe-scale-slider');
+          const scalePercent = scaleSlider ? parseInt(scaleSlider.value) : 100;
 
           // Filter stats based on checked checkboxes
-          const checkedImplicitStats = []
-          const checkedExplicitStats = []
+          const checkedImplicitStats: string[] = [];
+          const checkedExplicitStats: string[] = [];
 
-          this.container.querySelectorAll('.poe-stat-checkbox:checked').forEach(checkbox => {
-            const stat = checkbox.dataset.stat
-            const type = checkbox.dataset.type
+          this.container!.querySelectorAll<HTMLInputElement>('.poe-stat-checkbox:checked').forEach(checkbox => {
+            const stat = checkbox.dataset.stat!;
+            const type = checkbox.dataset.type!;
 
             if (type === 'implicit') {
-              checkedImplicitStats.push(stat)
+              checkedImplicitStats.push(stat);
             } else if (type === 'explicit') {
-              checkedExplicitStats.push(stat)
+              checkedExplicitStats.push(stat);
             }
-          })
+          });
 
           // Create filtered parsed object
-          const filteredParsed = {
+          const filteredParsed: ParsedItem = {
             ...parsed,
             stats: checkedExplicitStats,
             implicitStats: checkedImplicitStats
-          }
+          };
 
-          const totalChecked = checkedImplicitStats.length + checkedExplicitStats.length
-          this.updateStatus(`Searching... (${totalChecked} stats, Scale: ${scalePercent}%)`, 'info')
+          const totalChecked = checkedImplicitStats.length + checkedExplicitStats.length;
+          this.updateStatus(`Searching... (${totalChecked} stats, Scale: ${scalePercent}%)`, 'info');
 
           setTimeout(() => {
             if (this.isExpanded && this.isExecuting) {
-              this.toggleInterface()
+              this.toggleInterface();
             }
-          }, 500)
+          }, 500);
 
-          const result = await window.performSearch(filteredParsed, scalePercent)
+          const result = await (window as any).performSearch(filteredParsed, scalePercent);
 
           if (result.success) {
-            console.log('✅ Search completed successfully!')
+            this.logger.success('Search completed successfully!');
           } else {
-            console.log(`❌ Search failed: ${result.error}`)
+            this.logger.error(`Search failed: ${result.error}`);
           }
 
         } catch (error) {
-          console.error('Search error:', error)
+          this.logger.error('Search error:', error);
         } finally {
-          this.isExecuting = false
-          if (searchBtn) searchBtn.disabled = false
+          this.isExecuting = false;
+          if (searchBtn) searchBtn.disabled = false;
 
           setTimeout(() => {
             if (this.isExpanded) {
-              this.toggleInterface()
+              this.toggleInterface();
             }
-          }, 2000)
+          }, 2000);
         }
-      })
+      });
     }
   }
 
   // Update status
-  updateStatus(message, type = 'info') {
-    const statusBox = this.container.querySelector('#poe-status')
+  private updateStatus(message: string, type: string = 'info'): void {
+    const statusBox = this.container!.querySelector<HTMLElement>('#poe-status');
     if (statusBox) {
-      statusBox.textContent = message
-      statusBox.className = `poe-status ${type}`
+      statusBox.textContent = message;
+      statusBox.className = `poe-status ${type}`;
     }
   }
 
-  // Show preview with POE-style layout
   // Helper function to get scaled value display
-  getScaledValueDisplay(stat, scalePercent, isMapped = true, isColorblindMode = false, itemClass = null) {
-    if (scalePercent === 100) return ''
+  private getScaledValueDisplay(stat: string, scalePercent: number, isMapped: boolean = true, isColorblindMode: boolean = false, itemClass: string | null = null): string {
+    if (scalePercent === 100) return '';
 
-    const mapping = window.findStatMapping(stat, itemClass)
-    if (!mapping || !mapping.value) return ''
+    const mapping = (window as any).findStatMapping(stat, itemClass) as StatMapping | null;
+    if (!mapping || !mapping.value) return '';
 
-    const originalValue = mapping.value
-    const scaledValue = Math.floor(originalValue * (scalePercent / 100))
+    const originalValue = mapping.value;
+    const scaledValue = Math.floor(originalValue * (scalePercent / 100));
 
     // Determine color based on mapping status and colorblind mode
-    let color = '#1976d2' // Default blue
+    let color = '#1976d2'; // Default blue
     if (isMapped) {
-      color = isColorblindMode ? '#0066cc' : '#059669' // Blue for colorblind, green for normal
+      color = isColorblindMode ? '#0066cc' : '#059669'; // Blue for colorblind, green for normal
     } else {
-      color = isColorblindMode ? '#333333' : '#dc2626' // Dark gray for colorblind, red for normal
+      color = isColorblindMode ? '#333333' : '#dc2626'; // Dark gray for colorblind, red for normal
     }
 
     // For "Adds # to #" type stats, show the average value we calculated
     if (mapping.filterText && mapping.filterText.includes('Adds # to #')) {
-      return ` <span style="color: ${color} !important; font-weight: 600 !important; font-size: 11px !important;">[${scaledValue} avg]</span>`
+      return ` <span style="color: ${color} !important; font-weight: 600 !important; font-size: 11px !important;">[${scaledValue} avg]</span>`;
     }
 
     // For other stats, show the scaled value
-    return ` <span style="color: ${color} !important; font-weight: 600 !important; font-size: 11px !important;">[${scaledValue}]</span>`
+    return ` <span style="color: ${color} !important; font-weight: 600 !important; font-size: 11px !important;">[${scaledValue}]</span>`;
   }
 
-  showPreview(parsed) {
-    const preview = this.container.querySelector('#poe-preview')
-    const previewContent = this.container.querySelector('#poe-preview-content')
+  private showPreview(parsed: ParsedItem): void {
+    const preview = this.container!.querySelector<HTMLElement>('#poe-preview');
+    const previewContent = this.container!.querySelector<HTMLElement>('#poe-preview-content');
 
     if (preview && previewContent) {
       // Get current scale value
-      const scaleSlider = this.container.querySelector('#poe-scale-slider')
-      const scalePercent = scaleSlider ? parseInt(scaleSlider.value) : 100
+      const scaleSlider = this.container!.querySelector<HTMLInputElement>('#poe-scale-slider');
+      const scalePercent = scaleSlider ? parseInt(scaleSlider.value) : 100;
 
       // Check if colorblind mode is enabled
-      const card = this.container.querySelector('.poe-card')
-      const isColorblindMode = card && card.classList.contains('poe-colorblind-mode')
-      const mappedStats = []
-      const unmappedStats = []
-      const mappedImplicits = []
-      const unmappedImplicits = []
+      const card = this.container!.querySelector<HTMLElement>('.poe-card');
+      const isColorblindMode = Boolean(card && card.classList.contains('poe-colorblind-mode'));
+      const mappedStats: string[] = [];
+      const unmappedStats: string[] = [];
+      const mappedImplicits: string[] = [];
+      const unmappedImplicits: string[] = [];
 
       // Process explicit stats
       parsed.stats.forEach(stat => {
-        const mapping = window.findStatMapping(stat, parsed.itemClass)
+        const mapping = (window as any).findStatMapping(stat, parsed.itemClass) as StatMapping | null;
         if (mapping) {
-          mappedStats.push(stat)
+          mappedStats.push(stat);
         } else {
-          unmappedStats.push(stat)
+          unmappedStats.push(stat);
         }
-      })
+      });
 
       // Process implicit stats
       parsed.implicitStats.forEach(stat => {
-        const mapping = window.findStatMapping(stat, parsed.itemClass)
+        const mapping = (window as any).findStatMapping(stat, parsed.itemClass) as StatMapping | null;
         if (mapping) {
-          mappedImplicits.push(stat)
+          mappedImplicits.push(stat);
         } else {
-          unmappedImplicits.push(stat)
+          unmappedImplicits.push(stat);
         }
-      })
+      });
 
       // Get mapped category name for filter
-      const mappedCategory = window.ITEM_CLASS_TO_CATEGORY[parsed.itemClass] || parsed.itemClass
+      const mappedCategory = (window as any).ITEM_CLASS_TO_CATEGORY[parsed.itemClass] || parsed.itemClass;
 
       // POE-style layout with description and modifier stats
       let content = `
@@ -1160,33 +1397,33 @@ class POESearcherInterface {
             <div class="poe-item-info">${mappedCategory}</div>
           </div>
         </div>
-      `
+      `;
 
       // Debug: Log description stats
-      console.log('Description stats:', parsed.descriptionStats)
-      console.log('Implicit stats:', parsed.implicitStats)
+      this.logger.debug('Description stats:', parsed.descriptionStats);
+      this.logger.debug('Implicit stats:', parsed.implicitStats);
 
       // Store stats info for later use
-      const totalMappedStats = mappedImplicits.length + mappedStats.length
-      const hasAnyStats = totalMappedStats > 0 || unmappedImplicits.length > 0 || unmappedStats.length > 0
+      const totalMappedStats = mappedImplicits.length + mappedStats.length;
+      const hasAnyStats = totalMappedStats > 0 || unmappedImplicits.length > 0 || unmappedStats.length > 0;
 
       // Add implicit stats first if they exist
       if (mappedImplicits.length > 0 || unmappedImplicits.length > 0) {
         content += `
           <div class="poe-implicit-section">
             <div class="poe-stats-list">
-        `
+        `;
 
         // Add mapped implicit stats (green - will be searched)
         mappedImplicits.forEach((stat, index) => {
-          const scaledDisplay = this.getScaledValueDisplay(stat, scalePercent, true, isColorblindMode, parsed.itemClass)
+          const scaledDisplay = this.getScaledValueDisplay(stat, scalePercent, true, isColorblindMode, parsed.itemClass);
           content += `<div class="poe-stat-line mapped implicit">
             <label class="poe-stat-checkbox-label">
               <input type="checkbox" class="poe-stat-checkbox" data-stat="${stat}" data-type="implicit" data-index="${index}" checked>
               <span class="poe-stat-text">${stat}${scaledDisplay}</span>
             </label>
-          </div>`
-        })
+          </div>`;
+        });
 
         // Add unmapped implicit stats (red with unsupported label - will be skipped)
         unmappedImplicits.forEach((stat, index) => {
@@ -1195,13 +1432,13 @@ class POESearcherInterface {
               <input type="checkbox" class="poe-stat-checkbox" data-stat="${stat}" data-type="implicit" data-index="${index}" disabled>
               <span class="poe-stat-text">${stat} (unsupported)</span>
             </label>
-          </div>`
-        })
+          </div>`;
+        });
 
         content += `
             </div>
           </div>
-        `
+        `;
       }
 
       // Add description stats if they exist
@@ -1209,18 +1446,18 @@ class POESearcherInterface {
         content += `
           <div class="poe-description-section">
             <div class="poe-stats-list">
-        `
+        `;
 
         parsed.descriptionStats.forEach(stat => {
           content += `<div class="poe-stat-line description">
             <span class="poe-stat-text">${stat}</span>
-          </div>`
-        })
+          </div>`;
+        });
 
         content += `
             </div>
           </div>
-        `
+        `;
       }
 
       // Add "All" checkbox if there are any stats
@@ -1232,7 +1469,7 @@ class POESearcherInterface {
               <span class="poe-all-checkbox-text">(All)</span>
             </label>
           </div>
-        `
+        `;
       }
 
       // Add explicit modifier stats if they exist
@@ -1240,18 +1477,18 @@ class POESearcherInterface {
         content += `
           <div class="poe-modifiers-section">
             <div class="poe-stats-list">
-        `
+        `;
 
         // Add mapped stats (green - will be searched)
         mappedStats.forEach((stat, index) => {
-          const scaledDisplay = this.getScaledValueDisplay(stat, scalePercent, true, isColorblindMode, parsed.itemClass)
+          const scaledDisplay = this.getScaledValueDisplay(stat, scalePercent, true, isColorblindMode, parsed.itemClass);
           content += `<div class="poe-stat-line mapped">
             <label class="poe-stat-checkbox-label">
               <input type="checkbox" class="poe-stat-checkbox" data-stat="${stat}" data-type="explicit" data-index="${index}" checked>
               <span class="poe-stat-text">${stat}${scaledDisplay}</span>
             </label>
-          </div>`
-        })
+          </div>`;
+        });
 
         // Add unmapped stats (red with unsupported label - will be skipped)
         unmappedStats.forEach((stat, index) => {
@@ -1260,85 +1497,81 @@ class POESearcherInterface {
               <input type="checkbox" class="poe-stat-checkbox" data-stat="${stat}" data-type="explicit" data-index="${index}" disabled>
               <span class="poe-stat-text">${stat} (unsupported)</span>
             </label>
-          </div>`
-        })
+          </div>`;
+        });
 
         content += `
             </div>
           </div>
-        `
+        `;
       }
 
-      previewContent.innerHTML = content
-      preview.style.display = 'block'
+      previewContent.innerHTML = content;
+      preview.style.display = 'block';
 
       // Add event handlers for "All" checkbox with proper indeterminate state
-      const allCheckbox = this.container.querySelector('#poe-all-checkbox')
+      const allCheckbox = this.container!.querySelector<HTMLInputElement>('#poe-all-checkbox');
       if (allCheckbox) {
         // Function to update the "All" checkbox state based on individual checkboxes
         const updateAllCheckboxState = () => {
-          const statCheckboxes = this.container.querySelectorAll('.poe-stat-checkbox:not(#poe-all-checkbox):not(:disabled)')
-          const checkedCount = this.container.querySelectorAll('.poe-stat-checkbox:not(#poe-all-checkbox):not(:disabled):checked').length
-          const totalCount = statCheckboxes.length
+          const statCheckboxes = this.container!.querySelectorAll<HTMLInputElement>('.poe-stat-checkbox:not(#poe-all-checkbox):not(:disabled)');
+          const checkedCount = this.container!.querySelectorAll<HTMLInputElement>('.poe-stat-checkbox:not(#poe-all-checkbox):not(:disabled):checked').length;
+          const totalCount = statCheckboxes.length;
 
           if (checkedCount === 0) {
             // None checked
-            allCheckbox.checked = false
-            allCheckbox.indeterminate = false
+            allCheckbox.checked = false;
+            allCheckbox.indeterminate = false;
           } else if (checkedCount === totalCount) {
             // All checked
-            allCheckbox.checked = true
-            allCheckbox.indeterminate = false
+            allCheckbox.checked = true;
+            allCheckbox.indeterminate = false;
           } else {
             // Some checked (indeterminate state)
-            allCheckbox.checked = false
-            allCheckbox.indeterminate = true
+            allCheckbox.checked = false;
+            allCheckbox.indeterminate = true;
           }
-        }
+        };
 
         // Handle "All" checkbox clicks
-        allCheckbox.addEventListener('change', (e) => {
-          const statCheckboxes = this.container.querySelectorAll('.poe-stat-checkbox:not(#poe-all-checkbox):not(:disabled)')
+        allCheckbox.addEventListener('change', (_e) => {
+          const statCheckboxes = this.container!.querySelectorAll<HTMLInputElement>('.poe-stat-checkbox:not(#poe-all-checkbox):not(:disabled)');
 
           if (allCheckbox.checked) {
             // If now checked, check all
             statCheckboxes.forEach(checkbox => {
-              checkbox.checked = true
-            })
-            allCheckbox.indeterminate = false
+              checkbox.checked = true;
+            });
+            allCheckbox.indeterminate = false;
           } else {
             // If now unchecked, uncheck all
             statCheckboxes.forEach(checkbox => {
-              checkbox.checked = false
-            })
-            allCheckbox.indeterminate = false
+              checkbox.checked = false;
+            });
+            allCheckbox.indeterminate = false;
           }
-        })
+        });
 
         // Add event listeners to individual checkboxes to update "All" state
-        const statCheckboxes = this.container.querySelectorAll('.poe-stat-checkbox:not(#poe-all-checkbox):not(:disabled)')
+        const statCheckboxes = this.container!.querySelectorAll<HTMLInputElement>('.poe-stat-checkbox:not(#poe-all-checkbox):not(:disabled)');
         statCheckboxes.forEach(checkbox => {
-          checkbox.addEventListener('change', updateAllCheckboxState)
-        })
+          checkbox.addEventListener('change', updateAllCheckboxState);
+        });
 
         // Set initial state
-        updateAllCheckboxState()
+        updateAllCheckboxState();
       }
     }
   }
 
   // Hide preview
-  hidePreview() {
-    const preview = this.container.querySelector('#poe-preview')
+  private hidePreview(): void {
+    const preview = this.container!.querySelector<HTMLElement>('#poe-preview');
     if (preview) {
-      preview.style.display = 'none'
+      preview.style.display = 'none';
     }
   }
 }
 
-// Export
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { POESearcherInterface }
-} else {
-  window.POESearcherInterface = POESearcherInterface
-}
+// Browser environment - attach to window
+(window as any).POESearcherInterface = POESearcherInterface;
