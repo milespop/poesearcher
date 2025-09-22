@@ -50,6 +50,14 @@ const POE_STAT_MAPPINGS = {
         return match ? parseInt(match[1]) : null;
       }
     },
+    'explicit to maximum Energy Shield': {
+      filterText: '# to maximum Energy Shield',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/\+?(\d+)\s+to maximum Energy Shield/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
     'Gain # Mana per Enemy Killed': {
       filterText: 'Gain # Mana per Enemy Killed',
       group: 'explicit' as const,
@@ -172,6 +180,30 @@ const POE_STAT_MAPPINGS = {
         return match ? parseInt(match[1]) : null;
       }
     },
+    'increased maximum Life': {
+      filterText: '#% increased maximum Life',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)%\s+increased maximum Life/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    'increased maximum Mana': {
+      filterText: '#% increased maximum Mana',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)%\s+increased maximum Mana/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    'increased maximum Energy Shield': {
+      filterText: '#% increased maximum Energy Shield',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)%\s+increased maximum Energy Shield/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
     'increased Cast Speed': {
       filterText: '#% increased Cast Speed',
       group: 'explicit' as const,
@@ -201,6 +233,14 @@ const POE_STAT_MAPPINGS = {
       group: 'explicit' as const,
       extractValue: (statText: string): number | null => {
         const match = statText.match(/(\d+)\s+Life Regeneration per second/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    'increased Life Regeneration rate': {
+      filterText: '#% increased Life Regeneration rate',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)%\s+increased Life Regeneration rate/);
         return match ? parseInt(match[1]) : null;
       }
     },
@@ -801,6 +841,24 @@ const POE_STAT_MAPPINGS = {
       group: 'explicit' as const,
       extractValue: (statText: string): number | null => {
         const match = statText.match(/Gain (\d+)% of Damage as Extra Chaos Damage/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+
+    // === LIFE/MANA CONVERSION STATS ===
+    'of Damage is taken from Mana before Life': {
+      filterText: '#% of Damage is taken from Mana before Life',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)% of Damage is taken from Mana before Life/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    'of Maximum Life Converted to Energy Shield': {
+      filterText: '#% of Maximum Life Converted to Energy Shield',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)% of Maximum Life Converted to Energy Shield/);
         return match ? parseInt(match[1]) : null;
       }
     }
