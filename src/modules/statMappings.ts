@@ -408,6 +408,14 @@ const POE_STAT_MAPPINGS = {
         return match ? parseInt(match[1]) : null;
       }
     },
+    '% increased Chaos Damage': {
+      filterText: '#% increased Chaos Damage',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)%\s+increased Chaos Damage/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
     '% increased Attack Damage': {
       filterText: '#% increased Attack Damage',
       group: 'explicit' as const,
@@ -429,6 +437,31 @@ const POE_STAT_MAPPINGS = {
       group: 'explicit' as const,
       extractValue: (statText: string): number | null => {
         const match = statText.match(/(\d+)%\s+increased Melee Damage/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    '% increased Damage': {
+      filterText: '#% increased Damage',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        // Only match pure "increased Damage" without any conditionals
+        const match = statText.match(/^\+?(\d+)%\s+increased Damage$/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    '% increased Global Physical Damage': {
+      filterText: '#% increased Global Physical Damage',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)%\s+increased Global Physical Damage/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    '% increased Spell Physical Damage': {
+      filterText: '#% increased Spell Physical Damage',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)%\s+increased Spell Physical Damage/);
         return match ? parseInt(match[1]) : null;
       }
     },
