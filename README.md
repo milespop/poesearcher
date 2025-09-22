@@ -63,6 +63,8 @@ npm run build
 
 ## Usage
 
+![PoE2 Searcher Demo](wiki/poesearcher.gif)
+
 1. Navigate to the Path of Exile 2 trade website (`https://www.pathofexile.com/trade2/search/poe2/*`)
 2. The extension automatically loads - look for the floating search button with magnifying glass overlay
 3. Click the search button to expand the interface
