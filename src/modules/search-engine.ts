@@ -429,21 +429,21 @@ async function addSingleStatFilter(mapping: StatMapping): Promise<boolean> {
 
       logger.debug(`Filter created: ${newFilter.textContent?.trim()}`);
 
-      // Set the value - use max for "Adds # to #" stats, min for others
+      // Set the value - use min for "Adds # to #" stats, min for others
       const filterElement = newFilter.closest<HTMLElement>('.filter');
       if (filterElement) {
         const isAddsRange = mapping.filterText && mapping.filterText.includes('Adds # to #');
 
         if (isAddsRange) {
-          // For "Adds # to #" stats, set the max value
-          const maxInput = filterElement.querySelector<HTMLInputElement>('input[placeholder="max"]');
-          if (maxInput && mapping.value) {
-            logger.verbose(`Setting max value to: ${mapping.value} (for Adds # to # stat)`);
-            maxInput.focus();
-            maxInput.value = String(mapping.value);
-            maxInput.dispatchEvent(new Event('input', { bubbles: true }));
-            maxInput.dispatchEvent(new Event('change', { bubbles: true }));
-            logger.verbose(`Max value set to: ${mapping.value}`);
+          // For "Adds # to #" stats, set the min value
+          const minInput = filterElement.querySelector<HTMLInputElement>('input[placeholder="min"]');
+          if (minInput && mapping.value) {
+            logger.verbose(`Setting min value to: ${mapping.value} (for Adds # to # stat)`);
+            minInput.focus();
+            minInput.value = String(mapping.value);
+            minInput.dispatchEvent(new Event('input', { bubbles: true }));
+            minInput.dispatchEvent(new Event('change', { bubbles: true }));
+            logger.verbose(`Min value set to: ${mapping.value}`);
           }
         } else {
           // For other stats, set the min value
