@@ -21,7 +21,7 @@
     "sync-version": "node scripts/sync-version.js",
     "prebuild": "npm run sync-version && npm run clean && npm run typecheck",
     "postinstall": "npm run build",
-    "zip": "bestzip poesearcher.zip dist/poesearcher/*",
+    "zip": "cd dist/poesearcher && bestzip ../../poesearcher.zip *",
     "package": "npm run build && npm run zip",
     "changeset": "changeset",
     "changeset:version": "changeset version && npm run sync-version",
