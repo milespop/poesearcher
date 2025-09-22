@@ -137,13 +137,13 @@ jobs:
           echo "$CHANGELOG_ENTRY" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
-      - name: Delete Existing Release if Present
+      - name: Delete Existing Release if Present (Keep Tag)
         if: steps.check_release.outputs.is_release == 'true'
         run: |
           VERSION=${{ steps.get_version.outputs.version }}
           if gh release view "v$VERSION" >/dev/null 2>&1; then
-            echo "Deleting existing release v$VERSION"
-            gh release delete "v$VERSION" -y --cleanup-tag
+            echo "Deleting existing release v$VERSION (keeping tag)"
+            gh release delete "v$VERSION" -y
           else
             echo "No existing release v$VERSION found"
           fi
@@ -152,34 +152,42 @@ jobs:
 
       - name: Create GitHub Release
         if: steps.check_release.outputs.is_release == 'true'
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: v${{ steps.get_version.outputs.version }}
-          name: v${{ steps.get_version.outputs.version }}
-          body: |
-            ## Changes
+        run: |
+          VERSION=${{ steps.get_version.outputs.version }}
 
-            ${{ steps.changelog.outputs.CHANGELOG_ENTRY }}
+          # Ensure the zip file exists
+          if [ ! -f "./poesearcher.zip" ]; then
+            echo "❌ poesearcher.zip not found!"
+            exit 1
+          fi
 
-            ## Installation
+          # Create release with zip file
+          gh release create "v$VERSION" \
+            --title "v$VERSION" \
+            --notes "$(cat << 'EOF'
+          ## Changes
 
-            Download the `poesearcher.zip` file below and load it as an unpacked extension in Chrome:
+          ${{ steps.changelog.outputs.CHANGELOG_ENTRY }}
 
-            1. Download `poesearcher.zip` from the assets below
-            2. Extract the zip file to a folder
-            3. Open Chrome and go to `chrome://extensions/`
-            4. Enable "Developer mode" in the top right
-            5. Click "Load unpacked" and select the extracted folder
-            6. The extension will be ready to use on [Path of Exile trade pages](https://www.pathofexile.com/trade2/search/poe2/)
+          ## Installation
 
-            ## Compatibility
+          Download the \`poesearcher.zip\` file below and load it as an unpacked extension in Chrome:
 
-            - Chrome, Brave, Edge, and other Chromium-based browsers
-            - Path of Exile 2 trade website
-          files: |
-            ./poesearcher.zip
-          fail_on_unmatched_files: true
-          draft: false
-          prerelease: false
+          1. Download \`poesearcher.zip\` from the assets below
+          2. Extract the zip file to a folder
+          3. Open Chrome and go to \`chrome://extensions/\`
+          4. Enable "Developer mode" in the top right
+          5. Click "Load unpacked" and select the extracted folder
+          6. The extension will be ready to use on [Path of Exile trade pages](https://www.pathofexile.com/trade2/search/poe2/)
+
+          ## Compatibility
+
+          - Chrome, Brave, Edge, and other Chromium-based browsers
+          - Path of Exile 2 trade website
+          EOF
+          )" \
+            "./poesearcher.zip"
+
+          echo "✅ Created release v$VERSION with poesearcher.zip"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
