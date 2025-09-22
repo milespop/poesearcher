@@ -46,21 +46,6 @@ npm run build
    - Click "Load unpacked" and select the `dist/poesearcher/` directory
    - The extension icon will appear in your toolbar
 
-## Features
-
-- **Automatic Item Parsing**: Paste POE2 item text to automatically extract stats and modifiers
-- **Smart Stat Mapping**: Maps 85+ item stats to their corresponding trade site filters
-- **Mutation Type Support**: Handles explicit, implicit, desecrated, fractured, and pseudo modifiers
-- **Value Scaling**: Scale down stat values (1-100%) for broader search results
-- **Selective Filtering**: Choose which stats to include in your search with checkboxes
-- **Speed Profiles**: Choose between Safe (recommended) and Lightning (extreme speed) search engine
-- **Colorblind Mode**: Modern toggle switch with alternative color scheme for better accessibility
-- **Modern UI**: Clean Material Design interface with custom search icon and visual input feedback
-- **Automatic Filter Selection**: Intelligently selects the correct filter variant from dropdowns
-- **Visual Input Feedback**: Input field changes color based on validation state (green/blue for valid, red/gray for errors)
-- **Clear Functionality**: Reset button to clear input and restore default scale settings
-- **Smart Status Display**: Status messages only appear during validation errors
-
 ## Usage
 
 ![PoE2 Searcher Demo](wiki/poesearcher.gif)
@@ -79,6 +64,14 @@ npm run build
 8. Use the **Clear** button to reset input and scale to defaults
 9. Click "Search" to automatically fill and submit the search
 
+## Features
+
+- **Automatic Item Parsing**: Paste POE2 item text to automatically extract stats and modifiers
+- **Smart Stat Mapping**: Maps 85+ item stats to their corresponding trade site filters
+- **Value Scaling**: Scale down stat values (1-100%) for broader search results
+- **Selective Filtering**: Choose which stats to include in your search 
+- **Colorblind Mode**: Modern toggle switch with alternative color scheme for better accessibility
+
 ## Architecture
 
 ### Technology Stack
@@ -86,7 +79,7 @@ npm run build
 - **TypeScript**: Fully typed codebase with strict type checking
 - **Vite**: Modern build system with hot reload and optimization
 - **Chrome Extension Manifest V3**: Latest extension platform
-- **CRXJS Plugin**: Seamless Chrome extension development with Vite
+- **CRXJS Plugin**: Chrome extension development with Vite
 
 ### Project Structure
 
