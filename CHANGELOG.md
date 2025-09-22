@@ -1,5 +1,16 @@
 # poesearcher
 
+## 0.4.1
+
+### Patch Changes
+
+- c515aa5: Improve GitHub Actions workflow dependencies
+
+  - Split release workflow into separate jobs with proper dependencies
+  - Ensure build verification happens before tag creation and release
+  - Separate changeset PR creation from actual release process
+  - Add proper job ordering: test → changeset → build → release
+
 ## 0.4.0
 
 ### Minor Changes
