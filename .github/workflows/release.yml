@@ -41,19 +41,52 @@ jobs:
           version: npm run changeset:version
           # This expects you to have a script called release which builds and packages your extension
           publish: npm run changeset:release
-          title: "Release: Version Packages"
-          commit: "chore: release packages"
+          title: "Release: v$NEXT_VERSION"
+          commit: "chore: release v$NEXT_VERSION"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create Git Tag
+        if: steps.changesets.outputs.published == 'true'
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          git tag "v$VERSION"
+          git push origin "v$VERSION"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get Changelog Entry
+        if: steps.changesets.outputs.published == 'true'
+        id: changelog
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          # Extract changelog entry for current version
+          CHANGELOG_ENTRY=$(sed -n "/## $VERSION/,/## /p" CHANGELOG.md | sed '$d' | tail -n +2)
+          echo "CHANGELOG_ENTRY<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGELOG_ENTRY" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Create GitHub Release
         if: steps.changesets.outputs.published == 'true'
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: v${{ fromJson(steps.changesets.outputs.publishedPackages)[0].version }}
-          name: Release v${{ fromJson(steps.changesets.outputs.publishedPackages)[0].version }}
+          tag_name: v${{ steps.changelog.outputs.VERSION }}
+          name: Release v${{ steps.changelog.outputs.VERSION }}
           body: |
-            See the changelog for details about this release.
+            ## Changes
+
+            ${{ steps.changelog.outputs.CHANGELOG_ENTRY }}
+
+            ## Installation
+
+            Download the `poesearcher.zip` file and load it as an unpacked extension in Chrome:
+            1. Open Chrome and go to `chrome://extensions/`
+            2. Enable "Developer mode"
+            3. Click "Load unpacked"
+            4. Extract and select the extension folder
+
+            The extension will be ready to use on Path of Exile trade pages.
           files: |
             poesearcher.zip
           draft: false
