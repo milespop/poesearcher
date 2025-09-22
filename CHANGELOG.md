@@ -1,5 +1,13 @@
 # poesearcher
 
+## 0.2.6
+
+### Patch Changes
+
+- 7b876b9: Fix GitHub release workflow zip file attachment
+
+  Fixed workflow that was deleting git tags when removing existing releases, preventing zip file uploads. Now keeps tags and uses gh CLI for more reliable release creation with asset attachment.
+
 ## 0.2.5
 
 ### Patch Changes
