@@ -5,7 +5,7 @@ A modern TypeScript Chrome extension that automates item searching on the Path o
 ## Features
 
 - **Automatic Item Parsing**: Paste POE2 item text to automatically extract stats and modifiers
-- **Smart Stat Mapping**: Maps 115+ item stats to their corresponding trade site filters
+- **Smart Stat Mapping**: Maps 85+ item stats to their corresponding trade site filters
 - **Mutation Type Support**: Handles explicit, implicit, desecrated, fractured, and pseudo modifiers
 - **Value Scaling**: Scale down stat values (1-100%) for broader search results
 - **Selective Filtering**: Choose which stats to include in your search with checkboxes
@@ -42,6 +42,17 @@ npm run build
    - The extension icon will appear in your toolbar
 
 ### For Users
+
+1. **Download from GitHub Releases**:
+   - Go to [Releases](https://github.com/milespop/poesearcher/releases)
+   - Download the latest `poesearcher.zip` file
+   - Extract the zip file to a folder
+
+2. **Load in Chrome**:
+   - Open Chrome and navigate to `chrome://extensions/`
+   - Enable "Developer mode" in the top right
+   - Click "Load unpacked" and select the extracted folder
+   - The extension icon will appear in your toolbar
 
 The extension will be available on the Chrome Web Store (coming soon).
 
@@ -324,7 +335,7 @@ interface StorageResult {
 
 ## Supported Stats
 
-The extension currently supports 115+ stat mappings including:
+The extension currently supports 85+ stat mappings including:
 - Elemental resistances and damage
 - Physical and chaos damage
 - Critical strike modifiers
@@ -405,6 +416,16 @@ The project includes automated version synchronization:
 - Chrome storage caching for settings
 - Optimized bundle splitting via Vite
 
+## Releases
+
+This project uses automated releases via [Changeset CLI](https://github.com/changesets/changesets). When changes are merged to main:
+
+1. **Automatic Release PR**: A release PR is created with version bumps and changelog updates
+2. **GitHub Release**: Merging the release PR creates a GitHub release with the built extension
+3. **Asset Upload**: The `poesearcher.zip` file is automatically attached to releases
+
+Download the latest release from [GitHub Releases](https://github.com/milespop/poesearcher/releases).
+
 ## Contributing
 
 1. Fork the repository
@@ -415,13 +436,16 @@ The project includes automated version synchronization:
    npm run dev  # for development with hot reload
    ```
 4. Add your changes with appropriate TypeScript typing
-5. Test thoroughly with various item types and UI interactions:
+5. Create a changeset: `npm run changeset`
+6. Test thoroughly with various item types and UI interactions:
    - Visual input feedback (colors, borders)
    - Clear button functionality
    - Status message display behavior
-6. Ensure type checking passes: `npm run typecheck`
-7. Test packaging: `npm run package`
-8. Submit a pull request
+7. Ensure type checking passes: `npm run typecheck`
+8. Test packaging: `npm run package`
+9. Submit a pull request
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) and [RELEASE.md](RELEASE.md) for detailed contribution and release workflows.
 
 ## License
 

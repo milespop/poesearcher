@@ -105,7 +105,7 @@
 
 - Initial creation of POE Searcher Chrome extension with comprehensive trade search functionality
 
-  - Implemented item text parsing with 113+ stat filters
+  - Implemented item text parsing with 85+ stat filters
   - Added automated search form filling for Path of Exile trade website
   - Created Chrome extension with content script injection
   - Built comprehensive stat mappings for item properties, resistances, and modifiers
