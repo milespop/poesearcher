@@ -12,6 +12,7 @@ interface StorageResult {
   delayProfile?: 'safe' | 'lightning';
   logLevel?: number;
   minimizeAfterSearch?: boolean;
+  checkboxStates?: { [statKey: string]: boolean };
 }
 
 interface StatMapping {
@@ -1401,16 +1402,29 @@ export class POESearcherInterface {
           const checkedImplicitStats: string[] = [];
           const checkedExplicitStats: string[] = [];
 
-          this.container!.querySelectorAll<HTMLInputElement>('.poe-stat-checkbox:checked').forEach(checkbox => {
+          // Save checkbox states before searching
+          const checkboxStates: { [statKey: string]: boolean } = {};
+          this.container!.querySelectorAll<HTMLInputElement>('.poe-stat-checkbox:not(#poe-all-checkbox)').forEach(checkbox => {
             const stat = checkbox.dataset.stat!;
             const type = checkbox.dataset.type!;
+            const statKey = `${type}:${stat}`;
+            checkboxStates[statKey] = checkbox.checked;
 
-            if (type === 'implicit') {
-              checkedImplicitStats.push(stat);
-            } else if (type === 'explicit') {
-              checkedExplicitStats.push(stat);
+            if (checkbox.checked) {
+              if (type === 'implicit') {
+                checkedImplicitStats.push(stat);
+              } else if (type === 'explicit') {
+                checkedExplicitStats.push(stat);
+              }
             }
           });
+
+          // Store checkbox states
+          try {
+            chrome.storage.local.set({ checkboxStates });
+          } catch (e) {
+            // Ignore chrome API errors
+          }
 
           // Create filtered parsed object
           const filteredParsed: ParsedItem = {
@@ -1596,209 +1610,240 @@ export class POESearcherInterface {
       // Check if colorblind mode is enabled
       const card = this.container!.querySelector<HTMLElement>('.poe-card');
       const isColorblindMode = Boolean(card && card.classList.contains('poe-colorblind-mode'));
-      const mappedStats: string[] = [];
-      const unmappedStats: string[] = [];
-      const mappedImplicits: string[] = [];
-      const unmappedImplicits: string[] = [];
 
-      // Process explicit stats
-      parsed.stats.forEach(stat => {
-        const mapping = (window as any).findStatMapping(stat, parsed.itemClass) as StatMapping | null;
-        if (mapping) {
-          mappedStats.push(stat);
-        } else {
-          unmappedStats.push(stat);
-        }
+      // Load saved checkbox states
+      this.loadAndApplyCheckboxStates(parsed, scalePercent, isColorblindMode);
+    }
+  }
+
+  private loadAndApplyCheckboxStates(parsed: ParsedItem, scalePercent: number, isColorblindMode: boolean): void {
+    try {
+      chrome.storage.local.get(['checkboxStates'], (result: StorageResult) => {
+        const savedStates = result.checkboxStates || {};
+        this.generatePreviewContent(parsed, scalePercent, isColorblindMode, savedStates);
+      });
+    } catch (e) {
+      // Fallback to default states if storage fails
+      this.generatePreviewContent(parsed, scalePercent, isColorblindMode, {});
+    }
+  }
+
+  private getCheckboxState(statType: string, stat: string, checkboxStates: { [statKey: string]: boolean }): boolean {
+    const statKey = `${statType}:${stat}`;
+    // Default to checked if no saved state exists (for first-time use)
+    return checkboxStates[statKey] !== undefined ? checkboxStates[statKey] : true;
+  }
+
+  private generatePreviewContent(parsed: ParsedItem, scalePercent: number, isColorblindMode: boolean, checkboxStates: { [statKey: string]: boolean }): void {
+    const preview = this.container!.querySelector<HTMLElement>('#poe-preview');
+    const previewContent = this.container!.querySelector<HTMLElement>('#poe-preview-content');
+
+    if (!preview || !previewContent) return;
+
+    const mappedStats: string[] = [];
+    const unmappedStats: string[] = [];
+    const mappedImplicits: string[] = [];
+    const unmappedImplicits: string[] = [];
+
+    // Process explicit stats
+    parsed.stats.forEach(stat => {
+      const mapping = (window as any).findStatMapping(stat, parsed.itemClass) as StatMapping | null;
+      if (mapping) {
+        mappedStats.push(stat);
+      } else {
+        unmappedStats.push(stat);
+      }
+    });
+
+    // Process implicit stats
+    parsed.implicitStats.forEach(stat => {
+      const mapping = (window as any).findStatMapping(stat, parsed.itemClass) as StatMapping | null;
+      if (mapping) {
+        mappedImplicits.push(stat);
+      } else {
+        unmappedImplicits.push(stat);
+      }
+    });
+
+    // Get mapped category name for filter
+    const mappedCategory = (window as any).ITEM_CLASS_TO_CATEGORY[parsed.itemClass] || parsed.itemClass;
+
+    // POE-style layout with description and modifier stats
+    let content = `
+      <div class="poe-item-header">
+        <div class="poe-item-left">
+          <div class="poe-item-name">${parsed.name}</div>
+          <div class="poe-item-base">${parsed.baseType}</div>
+        </div>
+        <div class="poe-item-right">
+          <div class="poe-item-info">${mappedCategory}</div>
+        </div>
+      </div>
+    `;
+
+    // Debug: Log description stats
+    this.logger.debug('Description stats:', parsed.descriptionStats);
+    this.logger.debug('Implicit stats:', parsed.implicitStats);
+
+    // Store stats info for later use
+    const totalMappedStats = mappedImplicits.length + mappedStats.length;
+    const hasAnyStats = totalMappedStats > 0 || unmappedImplicits.length > 0 || unmappedStats.length > 0;
+
+    // Add implicit stats first if they exist
+    if (mappedImplicits.length > 0 || unmappedImplicits.length > 0) {
+      content += `
+        <div class="poe-implicit-section">
+          <div class="poe-stats-list">
+      `;
+
+      // Add mapped implicit stats (green - will be searched)
+      mappedImplicits.forEach((stat, index) => {
+        const scaledDisplay = this.getScaledValueDisplay(stat, scalePercent, true, isColorblindMode, parsed.itemClass);
+        const isChecked = this.getCheckboxState('implicit', stat, checkboxStates);
+        content += `<div class="poe-stat-line mapped implicit">
+          <label class="poe-stat-checkbox-label">
+            <input type="checkbox" class="poe-stat-checkbox" data-stat="${stat}" data-type="implicit" data-index="${index}" ${isChecked ? 'checked' : ''}>
+            <span class="poe-stat-text">${stat}${scaledDisplay}</span>
+          </label>
+        </div>`;
       });
 
-      // Process implicit stats
-      parsed.implicitStats.forEach(stat => {
-        const mapping = (window as any).findStatMapping(stat, parsed.itemClass) as StatMapping | null;
-        if (mapping) {
-          mappedImplicits.push(stat);
-        } else {
-          unmappedImplicits.push(stat);
-        }
+      // Add unmapped implicit stats (red with unsupported label - will be skipped)
+      unmappedImplicits.forEach((stat, index) => {
+        content += `<div class="poe-stat-line unmapped implicit">
+          <label class="poe-stat-checkbox-label">
+            <input type="checkbox" class="poe-stat-checkbox" data-stat="${stat}" data-type="implicit" data-index="${index}" disabled>
+            <span class="poe-stat-text">${stat} (unsupported)</span>
+          </label>
+        </div>`;
       });
 
-      // Get mapped category name for filter
-      const mappedCategory = (window as any).ITEM_CLASS_TO_CATEGORY[parsed.itemClass] || parsed.itemClass;
-
-      // POE-style layout with description and modifier stats
-      let content = `
-        <div class="poe-item-header">
-          <div class="poe-item-left">
-            <div class="poe-item-name">${parsed.name}</div>
-            <div class="poe-item-base">${parsed.baseType}</div>
-          </div>
-          <div class="poe-item-right">
-            <div class="poe-item-info">${mappedCategory}</div>
+      content += `
           </div>
         </div>
       `;
+    }
 
-      // Debug: Log description stats
-      this.logger.debug('Description stats:', parsed.descriptionStats);
-      this.logger.debug('Implicit stats:', parsed.implicitStats);
+    // Add description stats if they exist
+    if (parsed.descriptionStats && parsed.descriptionStats.length > 0) {
+      content += `
+        <div class="poe-description-section">
+          <div class="poe-stats-list">
+      `;
 
-      // Store stats info for later use
-      const totalMappedStats = mappedImplicits.length + mappedStats.length;
-      const hasAnyStats = totalMappedStats > 0 || unmappedImplicits.length > 0 || unmappedStats.length > 0;
+      parsed.descriptionStats.forEach(stat => {
+        content += `<div class="poe-stat-line description">
+          <span class="poe-stat-text">${stat}</span>
+        </div>`;
+      });
 
-      // Add implicit stats first if they exist
-      if (mappedImplicits.length > 0 || unmappedImplicits.length > 0) {
-        content += `
-          <div class="poe-implicit-section">
-            <div class="poe-stats-list">
-        `;
-
-        // Add mapped implicit stats (green - will be searched)
-        mappedImplicits.forEach((stat, index) => {
-          const scaledDisplay = this.getScaledValueDisplay(stat, scalePercent, true, isColorblindMode, parsed.itemClass);
-          content += `<div class="poe-stat-line mapped implicit">
-            <label class="poe-stat-checkbox-label">
-              <input type="checkbox" class="poe-stat-checkbox" data-stat="${stat}" data-type="implicit" data-index="${index}" checked>
-              <span class="poe-stat-text">${stat}${scaledDisplay}</span>
-            </label>
-          </div>`;
-        });
-
-        // Add unmapped implicit stats (red with unsupported label - will be skipped)
-        unmappedImplicits.forEach((stat, index) => {
-          content += `<div class="poe-stat-line unmapped implicit">
-            <label class="poe-stat-checkbox-label">
-              <input type="checkbox" class="poe-stat-checkbox" data-stat="${stat}" data-type="implicit" data-index="${index}" disabled>
-              <span class="poe-stat-text">${stat} (unsupported)</span>
-            </label>
-          </div>`;
-        });
-
-        content += `
-            </div>
+      content += `
           </div>
-        `;
-      }
+        </div>
+      `;
+    }
 
-      // Add description stats if they exist
-      if (parsed.descriptionStats && parsed.descriptionStats.length > 0) {
-        content += `
-          <div class="poe-description-section">
-            <div class="poe-stats-list">
-        `;
+    // Add "All" checkbox if there are any stats
+    if (hasAnyStats) {
+      content += `
+        <div class="poe-all-checkbox-container">
+          <label class="poe-all-checkbox-label">
+            <input type="checkbox" id="poe-all-checkbox" class="poe-stat-checkbox" ${totalMappedStats > 0 ? 'checked' : ''}>
+            <span class="poe-all-checkbox-text">(All)</span>
+          </label>
+        </div>
+      `;
+    }
 
-        parsed.descriptionStats.forEach(stat => {
-          content += `<div class="poe-stat-line description">
-            <span class="poe-stat-text">${stat}</span>
-          </div>`;
-        });
+    // Add explicit modifier stats if they exist
+    if (mappedStats.length > 0 || unmappedStats.length > 0) {
+      content += `
+        <div class="poe-modifiers-section">
+          <div class="poe-stats-list">
+      `;
 
-        content += `
-            </div>
+      // Add mapped stats (green - will be searched)
+      mappedStats.forEach((stat, index) => {
+        const scaledDisplay = this.getScaledValueDisplay(stat, scalePercent, true, isColorblindMode, parsed.itemClass);
+        const isChecked = this.getCheckboxState('explicit', stat, checkboxStates);
+        content += `<div class="poe-stat-line mapped">
+          <label class="poe-stat-checkbox-label">
+            <input type="checkbox" class="poe-stat-checkbox" data-stat="${stat}" data-type="explicit" data-index="${index}" ${isChecked ? 'checked' : ''}>
+            <span class="poe-stat-text">${stat}${scaledDisplay}</span>
+          </label>
+        </div>`;
+      });
+
+      // Add unmapped stats (red with unsupported label - will be skipped)
+      unmappedStats.forEach((stat, index) => {
+        content += `<div class="poe-stat-line unmapped">
+          <label class="poe-stat-checkbox-label">
+            <input type="checkbox" class="poe-stat-checkbox" data-stat="${stat}" data-type="explicit" data-index="${index}" disabled>
+            <span class="poe-stat-text">${stat} (unsupported)</span>
+          </label>
+        </div>`;
+      });
+
+      content += `
           </div>
-        `;
-      }
+        </div>
+      `;
+    }
 
-      // Add "All" checkbox if there are any stats
-      if (hasAnyStats) {
-        content += `
-          <div class="poe-all-checkbox-container">
-            <label class="poe-all-checkbox-label">
-              <input type="checkbox" id="poe-all-checkbox" class="poe-stat-checkbox" ${totalMappedStats > 0 ? 'checked' : ''}>
-              <span class="poe-all-checkbox-text">(All)</span>
-            </label>
-          </div>
-        `;
-      }
+    previewContent.innerHTML = content;
+    preview.style.display = 'block';
 
-      // Add explicit modifier stats if they exist
-      if (mappedStats.length > 0 || unmappedStats.length > 0) {
-        content += `
-          <div class="poe-modifiers-section">
-            <div class="poe-stats-list">
-        `;
-
-        // Add mapped stats (green - will be searched)
-        mappedStats.forEach((stat, index) => {
-          const scaledDisplay = this.getScaledValueDisplay(stat, scalePercent, true, isColorblindMode, parsed.itemClass);
-          content += `<div class="poe-stat-line mapped">
-            <label class="poe-stat-checkbox-label">
-              <input type="checkbox" class="poe-stat-checkbox" data-stat="${stat}" data-type="explicit" data-index="${index}" checked>
-              <span class="poe-stat-text">${stat}${scaledDisplay}</span>
-            </label>
-          </div>`;
-        });
-
-        // Add unmapped stats (red with unsupported label - will be skipped)
-        unmappedStats.forEach((stat, index) => {
-          content += `<div class="poe-stat-line unmapped">
-            <label class="poe-stat-checkbox-label">
-              <input type="checkbox" class="poe-stat-checkbox" data-stat="${stat}" data-type="explicit" data-index="${index}" disabled>
-              <span class="poe-stat-text">${stat} (unsupported)</span>
-            </label>
-          </div>`;
-        });
-
-        content += `
-            </div>
-          </div>
-        `;
-      }
-
-      previewContent.innerHTML = content;
-      preview.style.display = 'block';
-
-      // Add event handlers for "All" checkbox with proper indeterminate state
-      const allCheckbox = this.container!.querySelector<HTMLInputElement>('#poe-all-checkbox');
-      if (allCheckbox) {
-        // Function to update the "All" checkbox state based on individual checkboxes
-        const updateAllCheckboxState = () => {
-          const statCheckboxes = this.container!.querySelectorAll<HTMLInputElement>('.poe-stat-checkbox:not(#poe-all-checkbox):not(:disabled)');
-          const checkedCount = this.container!.querySelectorAll<HTMLInputElement>('.poe-stat-checkbox:not(#poe-all-checkbox):not(:disabled):checked').length;
-          const totalCount = statCheckboxes.length;
-
-          if (checkedCount === 0) {
-            // None checked
-            allCheckbox.checked = false;
-            allCheckbox.indeterminate = false;
-          } else if (checkedCount === totalCount) {
-            // All checked
-            allCheckbox.checked = true;
-            allCheckbox.indeterminate = false;
-          } else {
-            // Some checked (indeterminate state)
-            allCheckbox.checked = false;
-            allCheckbox.indeterminate = true;
-          }
-        };
-
-        // Handle "All" checkbox clicks
-        allCheckbox.addEventListener('change', (_e) => {
-          const statCheckboxes = this.container!.querySelectorAll<HTMLInputElement>('.poe-stat-checkbox:not(#poe-all-checkbox):not(:disabled)');
-
-          if (allCheckbox.checked) {
-            // If now checked, check all
-            statCheckboxes.forEach(checkbox => {
-              checkbox.checked = true;
-            });
-            allCheckbox.indeterminate = false;
-          } else {
-            // If now unchecked, uncheck all
-            statCheckboxes.forEach(checkbox => {
-              checkbox.checked = false;
-            });
-            allCheckbox.indeterminate = false;
-          }
-        });
-
-        // Add event listeners to individual checkboxes to update "All" state
+    // Add event handlers for "All" checkbox with proper indeterminate state
+    const allCheckbox = this.container!.querySelector<HTMLInputElement>('#poe-all-checkbox');
+    if (allCheckbox) {
+      // Function to update the "All" checkbox state based on individual checkboxes
+      const updateAllCheckboxState = () => {
         const statCheckboxes = this.container!.querySelectorAll<HTMLInputElement>('.poe-stat-checkbox:not(#poe-all-checkbox):not(:disabled)');
-        statCheckboxes.forEach(checkbox => {
-          checkbox.addEventListener('change', updateAllCheckboxState);
-        });
+        const checkedCount = this.container!.querySelectorAll<HTMLInputElement>('.poe-stat-checkbox:not(#poe-all-checkbox):not(:disabled):checked').length;
+        const totalCount = statCheckboxes.length;
 
-        // Set initial state
-        updateAllCheckboxState();
-      }
+        if (checkedCount === 0) {
+          // None checked
+          allCheckbox.checked = false;
+          allCheckbox.indeterminate = false;
+        } else if (checkedCount === totalCount) {
+          // All checked
+          allCheckbox.checked = true;
+          allCheckbox.indeterminate = false;
+        } else {
+          // Some checked (indeterminate state)
+          allCheckbox.checked = false;
+          allCheckbox.indeterminate = true;
+        }
+      };
+
+      // Handle "All" checkbox clicks
+      allCheckbox.addEventListener('change', (_e) => {
+        const statCheckboxes = this.container!.querySelectorAll<HTMLInputElement>('.poe-stat-checkbox:not(#poe-all-checkbox):not(:disabled)');
+
+        if (allCheckbox.checked) {
+          // If now checked, check all
+          statCheckboxes.forEach(checkbox => {
+            checkbox.checked = true;
+          });
+          allCheckbox.indeterminate = false;
+        } else {
+          // If now unchecked, uncheck all
+          statCheckboxes.forEach(checkbox => {
+            checkbox.checked = false;
+          });
+          allCheckbox.indeterminate = false;
+        }
+      });
+
+      // Add event listeners to individual checkboxes to update "All" state
+      const statCheckboxes = this.container!.querySelectorAll<HTMLInputElement>('.poe-stat-checkbox:not(#poe-all-checkbox):not(:disabled)');
+      statCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateAllCheckboxState);
+      });
+
+      // Set initial state
+      updateAllCheckboxState();
     }
   }
 
