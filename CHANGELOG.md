@@ -1,5 +1,22 @@
 # poesearcher
 
+## 0.2.2
+
+### Patch Changes
+
+- c9e19d4: Fix GitHub workflow PR title variable substitution
+
+  - Remove literal $NEXT_VERSION from PR title
+  - Add step to update PR title with actual version number
+  - Use GitHub CLI to update PR title after version is determined
+
+- c76a6b6: Test improved GitHub workflow with version tags and releases
+
+  - Verify PR title includes version number
+  - Test git tag creation and push
+  - Confirm GitHub release creation with zip file attachment
+  - Validate changelog extraction in release notes
+
 ## 0.2.1
 
 ### Patch Changes
