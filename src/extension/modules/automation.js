@@ -27,7 +27,7 @@ async function performSearch(parsed, scalePercent = 100) {
 
       // Step 4: Add stat filters (implicit stats first, then explicit)
       console.log(`📋 Step 4: Adding stat filters with ${scalePercent}% scale`)
-      await addStatFilters(allStats, scalePercent)
+      await addStatFilters(allStats, scalePercent, parsed.itemClass)
     }
 
     // Step 5: Execute search
@@ -208,13 +208,13 @@ async function setFilterCategoryState(categoryName, enabled) {
 }
 
 // Add stat filters
-async function addStatFilters(stats, scalePercent = 100) {
+async function addStatFilters(stats, scalePercent = 100, itemClass = null) {
   console.log(`📊 Adding stat filters for:`, stats)
 
   for (const stat of stats) {
     console.log(`🔍 Processing: "${stat}"`)
 
-    const mapping = window.findStatMapping(stat)
+    const mapping = window.findStatMapping(stat, itemClass)
     if (!mapping) {
       console.log(`⚠️ No mapping found for: "${stat}"`)
       continue
@@ -348,17 +348,33 @@ async function addSingleStatFilter(mapping) {
 
       console.log(`✅ Filter created: ${newFilter.textContent.trim()}`)
 
-      // Set the min value
+      // Set the value - use max for "Adds # to #" stats, min for others
       const filterElement = newFilter.closest('.filter')
       if (filterElement) {
-        const minInput = filterElement.querySelector('input[placeholder="min"]')
-        if (minInput && mapping.value) {
-          console.log(`💰 Setting min value to: ${mapping.value}`)
-          minInput.focus()
-          minInput.value = mapping.value
-          minInput.dispatchEvent(new Event('input', { bubbles: true }))
-          minInput.dispatchEvent(new Event('change', { bubbles: true }))
-          console.log(`✅ Min value set to: ${mapping.value}`)
+        const isAddsRange = mapping.filterText && mapping.filterText.includes('Adds # to #')
+
+        if (isAddsRange) {
+          // For "Adds # to #" stats, set the max value
+          const maxInput = filterElement.querySelector('input[placeholder="max"]')
+          if (maxInput && mapping.value) {
+            console.log(`💰 Setting max value to: ${mapping.value} (for Adds # to # stat)`)
+            maxInput.focus()
+            maxInput.value = mapping.value
+            maxInput.dispatchEvent(new Event('input', { bubbles: true }))
+            maxInput.dispatchEvent(new Event('change', { bubbles: true }))
+            console.log(`✅ Max value set to: ${mapping.value}`)
+          }
+        } else {
+          // For other stats, set the min value
+          const minInput = filterElement.querySelector('input[placeholder="min"]')
+          if (minInput && mapping.value) {
+            console.log(`💰 Setting min value to: ${mapping.value}`)
+            minInput.focus()
+            minInput.value = mapping.value
+            minInput.dispatchEvent(new Event('input', { bubbles: true }))
+            minInput.dispatchEvent(new Event('change', { bubbles: true }))
+            console.log(`✅ Min value set to: ${mapping.value}`)
+          }
         }
       }
 
