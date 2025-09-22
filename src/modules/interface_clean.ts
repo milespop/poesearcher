@@ -3,6 +3,7 @@
 
 import type { ParsedItem, ValidationResult } from './itemParser';
 import { createLogger } from './logger';
+import { validateEntireSiteStructure, type ComprehensiveSiteValidation } from './siteValidator';
 
 // Type definitions for interface
 interface StorageResult {
@@ -35,6 +36,10 @@ export class POESearcherInterface {
   private _delayProfileHandler: ((e: Event) => void) | null = null;
   private _logLevelHandler: ((e: Event) => void) | null = null;
   private _minimizeHandler: ((e: Event) => void) | null = null;
+  private _alertReportHandler: ((e: Event) => void) | null = null;
+  private _alertCopyHandler: ((e: Event) => void) | null = null;
+  private _alertDismissHandler: ((e: Event) => void) | null = null;
+  private currentValidationErrors: string[] = [];
 
   // Initialize the interface
   async init(): Promise<void> {
@@ -43,6 +48,9 @@ export class POESearcherInterface {
     this.loadStyles();
     this.createInterface();
     this.setupEventHandlers();
+
+    // Run site structure validation
+    await this.runValidation();
 
     this.logger.success('PoE2 Searcher ready!');
   }
@@ -915,6 +923,100 @@ export class POESearcherInterface {
         font-weight: inherit !important;
         letter-spacing: -0.1px !important;
       }
+
+      /* Validation Alert Component */
+      .poe-validation-alert {
+        background: #ffffff !important;
+        border: 2px solid #e53e3e !important;
+        border-radius: 12px !important;
+        margin: 16px 24px !important;
+        padding: 16px !important;
+        display: flex !important;
+        align-items: flex-start !important;
+        gap: 12px !important;
+        animation: slideDown 0.3s ease-out !important;
+      }
+
+      .poe-validation-alert.hidden {
+        display: none !important;
+      }
+
+      .poe-alert-icon {
+        font-size: 20px !important;
+        color: #e53e3e !important;
+        margin-top: 2px !important;
+        flex-shrink: 0 !important;
+      }
+
+      .poe-alert-content {
+        flex: 1 !important;
+        min-width: 0 !important;
+      }
+
+      .poe-alert-title {
+        font-weight: 600 !important;
+        color: #1a202c !important;
+        font-size: 14px !important;
+        margin: 0 0 4px 0 !important;
+        line-height: 1.4 !important;
+      }
+
+      .poe-alert-message {
+        color: #2d3748 !important;
+        font-size: 13px !important;
+        margin: 0 !important;
+        line-height: 1.4 !important;
+      }
+
+      .poe-alert-actions {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 8px !important;
+        flex-shrink: 0 !important;
+        margin-top: 8px !important;
+      }
+
+      .poe-alert-btn {
+        padding: 6px 12px !important;
+        border-radius: 6px !important;
+        border: none !important;
+        font-size: 12px !important;
+        font-weight: 500 !important;
+        cursor: pointer !important;
+        transition: all 0.2s ease !important;
+        white-space: nowrap !important;
+      }
+
+      .poe-alert-btn.primary {
+        background: #e53e3e !important;
+        color: white !important;
+      }
+
+      .poe-alert-btn.primary:hover {
+        background: #c53030 !important;
+      }
+
+      .poe-alert-btn.secondary {
+        background: transparent !important;
+        color: #2d3748 !important;
+        border: 1px solid #cbd5e0 !important;
+      }
+
+      .poe-alert-btn.secondary:hover {
+        background: #edf2f7 !important;
+        border-color: #a0aec0 !important;
+      }
+
+      @keyframes slideDown {
+        from {
+          opacity: 0;
+          transform: translateY(-10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
     `;
     document.head.appendChild(styles);
   }
@@ -933,7 +1035,7 @@ export class POESearcherInterface {
 
     const fab = this.container.querySelector<HTMLButtonElement>('.poe-fab');
     if (fab) {
-      fab.addEventListener('click', () => this.toggleInterface());
+      fab.addEventListener('click', async () => await this.toggleInterface());
     }
   }
 
@@ -956,6 +1058,19 @@ export class POESearcherInterface {
           <div class="poe-header-buttons">
             <button class="poe-options-btn" aria-label="Options" title="Options">⚙</button>
             <button class="poe-close-btn" aria-label="Close">×</button>
+          </div>
+        </div>
+
+        <div id="poe-validation-alert" class="poe-validation-alert hidden">
+          <div class="poe-alert-icon">⚠️</div>
+          <div class="poe-alert-content">
+            <div class="poe-alert-title">Site Structure Changed</div>
+            <div class="poe-alert-message">Please report a GitHub issue</div>
+          </div>
+          <div class="poe-alert-actions">
+            <button class="poe-alert-btn primary" id="poe-alert-report">Report Issue</button>
+            <button class="poe-alert-btn secondary" id="poe-alert-copy">Copy Error</button>
+            <button class="poe-alert-btn secondary" id="poe-alert-dismiss">Dismiss</button>
           </div>
         </div>
 
@@ -1041,16 +1156,20 @@ export class POESearcherInterface {
   }
 
   // Toggle interface
-  private toggleInterface(): void {
+  private async toggleInterface(): Promise<void> {
     this.isExpanded = !this.isExpanded;
 
     if (this.isExpanded) {
       this.logger.debug('Interface expanded');
       this.container!.innerHTML = this.getExpandedHTML();
       this.setupEventHandlers();
+
+      // Run validation and setup alert if needed
+      await this.runValidation();
     } else {
       this.logger.debug('Interface collapsed');
       this.clearEventHandlers();
+      this.clearAlertHandlers();
       this.container!.innerHTML = this.getCollapsedHTML();
     }
 
@@ -1190,8 +1309,8 @@ export class POESearcherInterface {
     const fab = this.container!.querySelector<HTMLButtonElement>('.poe-fab');
     const closeBtn = this.container!.querySelector<HTMLButtonElement>('.poe-close-btn');
 
-    if (fab) fab.addEventListener('click', () => this.toggleInterface());
-    if (closeBtn) closeBtn.addEventListener('click', () => this.toggleInterface());
+    if (fab) fab.addEventListener('click', async () => await this.toggleInterface());
+    if (closeBtn) closeBtn.addEventListener('click', async () => await this.toggleInterface());
   }
 
   // Clear event handlers
@@ -1234,6 +1353,9 @@ export class POESearcherInterface {
       const minimizeCheckbox = this.container!.querySelector<HTMLInputElement>('#poe-minimize-checkbox');
       if (minimizeCheckbox) minimizeCheckbox.removeEventListener('change', this._minimizeHandler);
     }
+
+    // Clear alert handlers too
+    this.clearAlertHandlers();
   }
 
   // Setup event handlers
@@ -1852,6 +1974,227 @@ export class POESearcherInterface {
     const preview = this.container!.querySelector<HTMLElement>('#poe-preview');
     if (preview) {
       preview.style.display = 'none';
+    }
+  }
+
+  // Run site structure validation
+  private async runValidation(): Promise<void> {
+    try {
+      this.logger.debug('Running site structure validation...');
+      const validation = await validateEntireSiteStructure();
+
+      if (!validation.overallValid) {
+        this.logger.warn('Site structure validation failed:', validation.criticalErrors);
+        this.showValidationAlert(validation);
+      } else {
+        this.logger.debug('Site structure validation passed');
+        this.hideValidationAlert();
+      }
+    } catch (error) {
+      this.logger.error('Validation error:', error);
+      this.showValidationAlert({
+        overallValid: false,
+        criticalErrors: ['Validation system error'],
+        searchInterface: { valid: false, errors: ['Unknown error'] },
+        typeFilters: { valid: false, errors: ['Unknown error'] },
+        statFilters: { valid: false, errors: [] },
+        advancedControls: { valid: false, errors: [] },
+        results: { valid: false, errors: [] }
+      });
+    }
+  }
+
+  // Show validation alert
+  private showValidationAlert(validation: ComprehensiveSiteValidation): void {
+    if (!this.isExpanded) return; // Only show if interface is expanded
+
+    // Store validation errors for copy functionality
+    this.currentValidationErrors = validation.criticalErrors;
+
+    const alertElement = this.container?.querySelector('#poe-validation-alert');
+    if (alertElement) {
+      // Update alert message with user-friendly translation
+      const friendlyMessage = this.translateValidationErrors(validation.criticalErrors);
+      const messageElement = alertElement.querySelector('.poe-alert-message');
+      if (messageElement) {
+        messageElement.textContent = friendlyMessage;
+      }
+
+      alertElement.classList.remove('hidden');
+      this.setupAlertHandlers();
+
+      // Disable search functionality
+      const searchBtn = this.container?.querySelector('#poe-search-btn') as HTMLButtonElement;
+      if (searchBtn) {
+        searchBtn.disabled = true;
+        searchBtn.textContent = 'Search Disabled';
+        searchBtn.style.opacity = '0.5';
+      }
+    }
+  }
+
+  // Hide validation alert
+  private hideValidationAlert(): void {
+    const alertElement = this.container?.querySelector('#poe-validation-alert');
+    if (alertElement) {
+      alertElement.classList.add('hidden');
+
+      // Re-enable search functionality
+      const searchBtn = this.container?.querySelector('#poe-search-btn') as HTMLButtonElement;
+      if (searchBtn) {
+        searchBtn.disabled = false;
+        searchBtn.textContent = 'Search';
+        searchBtn.style.opacity = '1';
+      }
+    }
+  }
+
+  // Setup alert button handlers
+  private setupAlertHandlers(): void {
+    // Clear existing handlers
+    this.clearAlertHandlers();
+
+    // Report Issue button
+    const reportBtn = this.container?.querySelector('#poe-alert-report') as HTMLButtonElement;
+    if (reportBtn) {
+      this._alertReportHandler = (e: Event) => {
+        e.preventDefault();
+        this.openGitHubIssues();
+      };
+      reportBtn.addEventListener('click', this._alertReportHandler);
+    }
+
+    // Copy Error button
+    const copyBtn = this.container?.querySelector('#poe-alert-copy') as HTMLButtonElement;
+    if (copyBtn) {
+      this._alertCopyHandler = async (e: Event) => {
+        e.preventDefault();
+        await this.copyErrorDetails(copyBtn);
+      };
+      copyBtn.addEventListener('click', this._alertCopyHandler);
+    }
+
+    // Dismiss button
+    const dismissBtn = this.container?.querySelector('#poe-alert-dismiss') as HTMLButtonElement;
+    if (dismissBtn) {
+      this._alertDismissHandler = (e: Event) => {
+        e.preventDefault();
+        this.hideValidationAlert();
+      };
+      dismissBtn.addEventListener('click', this._alertDismissHandler);
+    }
+  }
+
+  // Clear alert handlers
+  private clearAlertHandlers(): void {
+    if (this._alertReportHandler) {
+      const reportBtn = this.container?.querySelector('#poe-alert-report');
+      if (reportBtn) reportBtn.removeEventListener('click', this._alertReportHandler);
+      this._alertReportHandler = null;
+    }
+
+    if (this._alertCopyHandler) {
+      const copyBtn = this.container?.querySelector('#poe-alert-copy');
+      if (copyBtn) copyBtn.removeEventListener('click', this._alertCopyHandler);
+      this._alertCopyHandler = null;
+    }
+
+    if (this._alertDismissHandler) {
+      const dismissBtn = this.container?.querySelector('#poe-alert-dismiss');
+      if (dismissBtn) dismissBtn.removeEventListener('click', this._alertDismissHandler);
+      this._alertDismissHandler = null;
+    }
+  }
+
+  // Translate technical validation errors to user-friendly messages
+  private translateValidationErrors(errors: string[]): string {
+    if (errors.length === 0) return 'Please report a GitHub issue';
+
+    // Look for specific error patterns and provide user-friendly translations
+    for (const error of errors) {
+      if (error.includes('Item Category filter not found')) {
+        return 'Item category selection has changed. Please report a GitHub issue.';
+      }
+      if (error.includes('Search field placeholder')) {
+        return 'Main search interface has been updated. Please report a GitHub issue.';
+      }
+      if (error.includes('Missing expected categories')) {
+        return 'Item categories have been modified. Please report a GitHub issue.';
+      }
+      if (error.includes('Clear button not found')) {
+        return 'Search controls have changed. Please report a GitHub issue.';
+      }
+      if (error.includes('Type Filters section not found')) {
+        return 'Filter interface has been restructured. Please report a GitHub issue.';
+      }
+    }
+
+    // Generic fallback message
+    return 'POE trade site structure has changed. Please report a GitHub issue.';
+  }
+
+  // Copy error details to clipboard
+  private async copyErrorDetails(button: HTMLButtonElement): Promise<void> {
+    try {
+      // Create detailed error report
+      const timestamp = new Date().toISOString();
+      const userAgent = navigator.userAgent;
+      const currentUrl = window.location.href;
+
+      const errorReport = `## POE Searcher Site Structure Validation Error
+
+**Timestamp:** ${timestamp}
+**URL:** ${currentUrl}
+**User Agent:** ${userAgent}
+
+**Technical Error Details:**
+${this.currentValidationErrors.map(error => `- ${error}`).join('\n')}
+
+**Extension Version:** 0.3.5
+
+Please include this information when reporting the issue at:
+https://github.com/milespop/poesearcher/issues`;
+
+      await navigator.clipboard.writeText(errorReport);
+
+      // Update button to show success
+      const originalText = button.textContent;
+      button.textContent = 'Copied!';
+      button.style.backgroundColor = '#48bb78';
+
+      setTimeout(() => {
+        button.textContent = originalText;
+        button.style.backgroundColor = '';
+      }, 2000);
+
+      this.logger.info('Error details copied to clipboard');
+    } catch (error) {
+      this.logger.error('Failed to copy error details:', error);
+
+      // Fallback: show error details in alert
+      const errorText = this.currentValidationErrors.join('\n');
+      alert(`Failed to copy to clipboard. Error details:\n\n${errorText}`);
+    }
+  }
+
+  // Open GitHub issues page
+  private openGitHubIssues(): void {
+    const issueUrl = 'https://github.com/milespop/poesearcher/issues';
+    try {
+      if (typeof chrome !== 'undefined' && chrome.tabs) {
+        chrome.tabs.create({ url: issueUrl });
+      } else {
+        window.open(issueUrl, '_blank');
+      }
+      this.logger.info('Opened GitHub issues page');
+    } catch (error) {
+      this.logger.error('Failed to open GitHub issues:', error);
+      // Fallback to copying URL to clipboard
+      navigator.clipboard.writeText(issueUrl).then(() => {
+        alert('GitHub issues URL copied to clipboard: ' + issueUrl);
+      }).catch(() => {
+        alert('Please visit: ' + issueUrl);
+      });
     }
   }
 }

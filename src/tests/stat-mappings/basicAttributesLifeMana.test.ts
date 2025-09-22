@@ -2,12 +2,12 @@ import { describe, it, expect, findStatMapping } from './testSetup';
 
 describe('Table 1: Basic Attributes & Life/Mana', () => {
 
-  it('should map "# to maximum Energy Shield" (currently returns pseudo first)', () => {
-    // Note: Returns pseudo stat due to object iteration order
+  it('should map "# to maximum Energy Shield"', () => {
+    // Should return explicit version for single stats (pseudo only used for combinations)
     const result = findStatMapping('100 to maximum Energy Shield');
     expect(result).toBeTruthy();
-    expect(result?.filterText).toBe('+# total maximum Energy Shield');
-    expect(result?.group).toBe('pseudo');
+    expect(result?.filterText).toBe('# to maximum Energy Shield');
+    expect(result?.group).toBe('explicit');
     expect(result?.value).toBe(100);
   });
 

@@ -102,7 +102,7 @@ const POE_STAT_MAPPINGS = {
       filterText: '+# total maximum Energy Shield',
       group: 'pseudo' as const,
       extractValue: (statText: string): number | null => {
-        const match = statText.match(/\+?(\d+)\s+to maximum Energy Shield/);
+        const match = statText.match(/\+?(\d+)\s+(?:total\s+)?(?:maximum\s+)?Energy Shield/);
         return match ? parseInt(match[1]) : null;
       }
     },
@@ -138,7 +138,7 @@ const POE_STAT_MAPPINGS = {
       filterText: '+#% total to Cold Resistance',
       group: 'pseudo' as const,
       extractValue: (statText: string): number | null => {
-        const match = statText.match(/\+?(\d+)%\s+to Cold Resistance/);
+        const match = statText.match(/\+?(\d+)%\s+(?:total\s+)?to Cold Resistance/);
         return match ? parseInt(match[1]) : null;
       }
     },
@@ -150,7 +150,7 @@ const POE_STAT_MAPPINGS = {
         if (statText.includes('Enemies in your Presence')) {
           return null;
         }
-        const match = statText.match(/\+?(\d+)%\s+to Fire Resistance/);
+        const match = statText.match(/\+?(\d+)%\s+(?:total\s+)?to Fire Resistance/);
         return match ? parseInt(match[1]) : null;
       }
     },
@@ -158,7 +158,7 @@ const POE_STAT_MAPPINGS = {
       filterText: '+#% total to Lightning Resistance',
       group: 'pseudo' as const,
       extractValue: (statText: string): number | null => {
-        const match = statText.match(/\+?(\d+)%\s+to Lightning Resistance/);
+        const match = statText.match(/\+?(\d+)%\s+(?:total\s+)?to Lightning Resistance/);
         return match ? parseInt(match[1]) : null;
       }
     },
@@ -170,7 +170,7 @@ const POE_STAT_MAPPINGS = {
         if (statText.includes('Minions have')) {
           return null;
         }
-        const match = statText.match(/\+?(\d+)%\s+to Chaos Resistance/);
+        const match = statText.match(/\+?(\d+)%\s+(?:total\s+)?to Chaos Resistance/);
         return match ? parseInt(match[1]) : null;
       }
     },
@@ -226,7 +226,7 @@ const POE_STAT_MAPPINGS = {
       filterText: '+# total to Strength',
       group: 'pseudo' as const,
       extractValue: (statText: string): number | null => {
-        const match = statText.match(/\+?(\d+)\s+to Strength/);
+        const match = statText.match(/\+?(\d+)\s+(?:total\s+)?to Strength/);
         return match ? parseInt(match[1]) : null;
       }
     },
@@ -234,7 +234,7 @@ const POE_STAT_MAPPINGS = {
       filterText: '+# total to Intelligence',
       group: 'pseudo' as const,
       extractValue: (statText: string): number | null => {
-        const match = statText.match(/\+?(\d+)\s+to Intelligence/);
+        const match = statText.match(/\+?(\d+)\s+(?:total\s+)?to Intelligence/);
         return match ? parseInt(match[1]) : null;
       }
     },
@@ -250,7 +250,7 @@ const POE_STAT_MAPPINGS = {
       filterText: '+# total to all Attributes',
       group: 'pseudo' as const,
       extractValue: (statText: string): number | null => {
-        const match = statText.match(/\+?(\d+)\s+to all Attributes/);
+        const match = statText.match(/\+?(\d+)\s+(?:total\s+)?to all Attributes/);
         return match ? parseInt(match[1]) : null;
       }
     },

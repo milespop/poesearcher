@@ -4,6 +4,7 @@
 import type { ParsedItem } from './itemParser';
 import { createLogger } from './logger';
 import { findItemCategoryInput, validateEntireSiteStructure } from './siteValidator';
+import { combineCompatibleStats } from './statCombination';
 
 // Type definitions for search engine
 export interface SearchResult {
@@ -83,6 +84,7 @@ function updateDelayProfile(newProfile: keyof typeof DELAY_PROFILES): void {
 // Expose the function globally for interface access
 (window as any).updateDelayProfile = updateDelayProfile;
 
+
 // Main search engine function
 export async function performSearch(parsed: ParsedItem, scalePercent: number = 100): Promise<SearchResult> {
   logger.info('Performing search with item data:', parsed);
@@ -111,15 +113,20 @@ export async function performSearch(parsed: ParsedItem, scalePercent: number = 1
     const allStats = [...(parsed.implicitStats || []), ...(parsed.stats || [])];
     if (allStats.length > 0) {
       logger.debug(`Step 3: Expanding filters for ${allStats.length} stats (${parsed.implicitStats?.length || 0} implicit, ${parsed.stats?.length || 0} explicit)`);
+
+      // Step 3.1: Combine compatible implicit + explicit stats into pseudo totals
+      const combinedStats = combineCompatibleStats(parsed.implicitStats || [], parsed.stats || []);
+      logger.debug(`Step 3.1: Combined ${allStats.length} individual stats into ${combinedStats.length} filters (${allStats.length - combinedStats.length} combinations made)`);
+
       await expandFilters();
 
       // Step 3.5: Configure filter categories
       logger.debug('Step 3.5: Setting filter categories (only Type Filters enabled)');
       await setFilterCategories();
 
-      // Step 4: Add stat filters (implicit stats first, then explicit)
-      logger.debug(`Step 4: Adding stat filters with ${scalePercent}% scale`);
-      await addStatFilters(allStats, scalePercent, parsed.itemClass);
+      // Step 4: Add stat filters with combined stats
+      logger.debug(`Step 4: Adding ${combinedStats.length} stat filters with ${scalePercent}% scale`);
+      await addStatFilters(combinedStats, scalePercent, parsed.itemClass);
     }
 
     // Step 5: Execute search
@@ -660,3 +667,4 @@ async function executeSearch(): Promise<void> {
 (window as any).addStatFilters = addStatFilters;
 (window as any).addSingleStatFilter = addSingleStatFilter;
 (window as any).executeSearch = executeSearch;
+(window as any).combineCompatibleStats = combineCompatibleStats;
