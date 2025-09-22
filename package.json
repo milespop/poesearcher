@@ -1,6 +1,6 @@
 {
   "name": "poesearcher",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "A Chrome extension that automates item searching on the Path of Exile trade website by parsing item text and automatically filling in search filters.",
   "license": "MIT",
   "devDependencies": {
