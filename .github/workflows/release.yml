@@ -124,23 +124,21 @@ jobs:
           echo "$CHANGELOG_ENTRY" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
-      - name: Check if Release Exists
+      - name: Delete Existing Release if Present
         if: steps.check_release.outputs.is_release == 'true'
-        id: check_release_exists
         run: |
           VERSION=${{ steps.get_version.outputs.version }}
           if gh release view "v$VERSION" >/dev/null 2>&1; then
-            echo "exists=true" >> $GITHUB_OUTPUT
-            echo "Release v$VERSION already exists"
+            echo "Deleting existing release v$VERSION"
+            gh release delete "v$VERSION" -y
           else
-            echo "exists=false" >> $GITHUB_OUTPUT
-            echo "Release v$VERSION does not exist"
+            echo "No existing release v$VERSION found"
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create GitHub Release
-        if: steps.check_release.outputs.is_release == 'true' && steps.check_release_exists.outputs.exists == 'false'
+        if: steps.check_release.outputs.is_release == 'true'
         uses: softprops/action-gh-release@v1
         with:
           tag_name: v${{ steps.get_version.outputs.version }}
