@@ -28,6 +28,14 @@ const POE_STAT_MAPPINGS = {
         return match ? parseInt(match[1]) : null
       }
     },
+    'Gain # Mana per Enemy Killed': {
+      filterText: 'Gain # Mana per Enemy Killed',
+      group: 'explicit',
+      extractValue: (statText) => {
+        const match = statText.match(/Gain (\d+) Mana per Enemy Killed/)
+        return match ? parseInt(match[1]) : null
+      }
+    },
     'to all Elemental Resistances': {
       filterText: '#% to all Elemental Resistances',
       group: 'explicit',
@@ -197,7 +205,10 @@ const POE_STAT_MAPPINGS = {
       group: 'explicit',
       extractValue: (statText) => {
         // Only match if it doesn't contain "to Attacks" (more specific pattern should handle that)
-        const match = statText.match(/Adds (\d+) to (\d+) Physical Damage(?! to Attacks)/)
+        if (statText.includes('to Attacks')) {
+          return null
+        }
+        const match = statText.match(/Adds (\d+) to (\d+) Physical Damage/)
         return match ? Math.floor((parseInt(match[1]) + parseInt(match[2])) / 2) : null
       }
     },
@@ -214,7 +225,10 @@ const POE_STAT_MAPPINGS = {
       group: 'explicit',
       extractValue: (statText) => {
         // Only match if it doesn't contain "to Attacks" (more specific pattern should handle that)
-        const match = statText.match(/Adds (\d+) to (\d+) Fire Damage(?! to Attacks)/)
+        if (statText.includes('to Attacks')) {
+          return null
+        }
+        const match = statText.match(/Adds (\d+) to (\d+) Fire Damage/)
         return match ? Math.floor((parseInt(match[1]) + parseInt(match[2])) / 2) : null
       }
     },
@@ -223,7 +237,18 @@ const POE_STAT_MAPPINGS = {
       group: 'explicit',
       extractValue: (statText) => {
         // Only match if it doesn't contain "to Attacks" (more specific pattern should handle that)
-        const match = statText.match(/Adds (\d+) to (\d+) Cold Damage(?! to Attacks)/)
+        if (statText.includes('to Attacks')) {
+          return null
+        }
+        const match = statText.match(/Adds (\d+) to (\d+) Cold Damage/)
+        return match ? Math.floor((parseInt(match[1]) + parseInt(match[2])) / 2) : null
+      }
+    },
+    'Adds # to # Lightning Damage (rune)': {
+      filterText: 'Adds # to # Lightning Damage',
+      group: 'fractured',
+      extractValue: (statText) => {
+        const match = statText.match(/Adds (\d+) to (\d+) Lightning Damage\s*\(rune\)/)
         return match ? Math.floor((parseInt(match[1]) + parseInt(match[2])) / 2) : null
       }
     },
@@ -231,8 +256,11 @@ const POE_STAT_MAPPINGS = {
       filterText: 'Adds # to # Lightning Damage',
       group: 'explicit',
       extractValue: (statText) => {
-        // Only match if it doesn't contain "to Attacks" (more specific pattern should handle that)
-        const match = statText.match(/Adds (\d+) to (\d+) Lightning Damage(?! to Attacks)/)
+        // Only match if it doesn't contain "to Attacks" or "(rune)"
+        if (statText.includes('to Attacks') || statText.includes('(rune)')) {
+          return null
+        }
+        const match = statText.match(/Adds (\d+) to (\d+) Lightning Damage/)
         return match ? Math.floor((parseInt(match[1]) + parseInt(match[2])) / 2) : null
       }
     },
@@ -281,14 +309,6 @@ const POE_STAT_MAPPINGS = {
       group: 'explicit',
       extractValue: (statText) => {
         const match = statText.match(/(\d+)%\s+increased Lightning Damage/)
-        return match ? parseInt(match[1]) : null
-      }
-    },
-    '% increased Elemental Damage': {
-      filterText: '#% increased Elemental Damage',
-      group: 'explicit',
-      extractValue: (statText) => {
-        const match = statText.match(/(\d+)%\s+increased Elemental Damage/)
         return match ? parseInt(match[1]) : null
       }
     },
@@ -363,6 +383,22 @@ const POE_STAT_MAPPINGS = {
       group: 'explicit',
       extractValue: (statText) => {
         const match = statText.match(/(\d+)%\s+increased Attack Speed/)
+        return match ? parseInt(match[1]) : null
+      }
+    },
+    'to Accuracy Rating (Local)': {
+      filterText: '# to Accuracy Rating (Local)',
+      group: 'explicit',
+      extractValue: (statText) => {
+        const match = statText.match(/\+?(\d+)\s+to Accuracy Rating/)
+        return match ? parseInt(match[1]) : null
+      }
+    },
+    '% increased Block chance (Local)': {
+      filterText: '#% increased Block chance (Local)',
+      group: 'explicit',
+      extractValue: (statText) => {
+        const match = statText.match(/(\d+)%\s+increased Block chance/)
         return match ? parseInt(match[1]) : null
       }
     },
@@ -829,11 +865,11 @@ const POE_STAT_MAPPINGS = {
         return match ? parseInt(match[1]) : null
       }
     },
-    'increased Elemental Damage': {
-      filterText: '#% increased Elemental Damage',
-      group: 'explicit',
+    'increased Elemental Damage with Attacks (desecrated)': {
+      filterText: '#% increased Elemental Damage with Attacks',
+      group: 'desecrated',
       extractValue: (statText) => {
-        const match = statText.match(/(\d+)% increased Elemental Damage/)
+        const match = statText.match(/(\d+)% increased Elemental Damage with Attacks\s*\(desecrated\)/)
         return match ? parseInt(match[1]) : null
       }
     },
@@ -841,7 +877,19 @@ const POE_STAT_MAPPINGS = {
       filterText: '#% increased Elemental Damage with Attacks',
       group: 'explicit',
       extractValue: (statText) => {
-        const match = statText.match(/(\d+)% increased Elemental Damage with Attacks/)
+        const match = statText.match(/(\d+)% increased Elemental Damage with Attacks(?!\s*\(desecrated\))/)
+        return match ? parseInt(match[1]) : null
+      }
+    },
+    'increased Elemental Damage': {
+      filterText: '#% increased Elemental Damage',
+      group: 'explicit',
+      extractValue: (statText) => {
+        // Don't match if it contains "with Attacks"
+        if (statText.includes('with Attacks')) {
+          return null
+        }
+        const match = statText.match(/(\d+)% increased Elemental Damage/)
         return match ? parseInt(match[1]) : null
       }
     },
@@ -1025,8 +1073,57 @@ const POE_STAT_MAPPINGS = {
   }
 }
 
+// Define weapon categories for Attack Speed (Local) and Accuracy Rating (Local) priority
+const WEAPON_CATEGORIES = [
+  'Staves', 'Crossbows', 'Bows', 'Wands', 'Swords', 'Axes', 'Maces',
+  'Daggers', 'Claws', 'Sceptres', 'Two Hand Swords', 'Two Hand Axes',
+  'Two Hand Maces', 'Quarterstaves', 'Spears', 'Flails'
+]
+
+// Define shield category for Block chance (Local) priority
+const SHIELD_CATEGORY = 'Shields'
+
 // Stat mapping utility functions
-function findStatMapping(statText) {
+function findStatMapping(statText, itemClass = null) {
+  const isWeapon = itemClass && WEAPON_CATEGORIES.includes(itemClass)
+  const isShield = itemClass === SHIELD_CATEGORY
+
+  // For weapons, prioritize local versions of Attack Speed and Accuracy Rating
+  if (isWeapon) {
+    if (statText.includes('increased Attack Speed')) {
+      // Try Attack Speed (Local) first for weapons
+      const localMapping = POE_STAT_MAPPINGS.mappings['% increased Attack Speed (Local)']
+      if (localMapping) {
+        const value = localMapping.extractValue(statText)
+        if (value !== null) {
+          return { ...localMapping, value, originalText: statText, searchKey: '% increased Attack Speed (Local)' }
+        }
+      }
+    } else if (statText.includes('to Accuracy Rating')) {
+      // Try Accuracy Rating (Local) first for weapons
+      const localMapping = POE_STAT_MAPPINGS.mappings['to Accuracy Rating (Local)']
+      if (localMapping) {
+        const value = localMapping.extractValue(statText)
+        if (value !== null) {
+          return { ...localMapping, value, originalText: statText, searchKey: 'to Accuracy Rating (Local)' }
+        }
+      }
+    }
+  }
+
+  // For shields, prioritize local version of Block chance
+  if (isShield && statText.includes('increased Block chance')) {
+    // Try Block chance (Local) first for shields
+    const localMapping = POE_STAT_MAPPINGS.mappings['% increased Block chance (Local)']
+    if (localMapping) {
+      const value = localMapping.extractValue(statText)
+      if (value !== null) {
+        return { ...localMapping, value, originalText: statText, searchKey: '% increased Block chance (Local)' }
+      }
+    }
+  }
+
+  // Standard search for all other cases or if no local version found
   for (const [key, mapping] of Object.entries(POE_STAT_MAPPINGS.mappings)) {
     const value = mapping.extractValue(statText)
     if (value !== null) {

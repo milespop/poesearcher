@@ -406,6 +406,27 @@ class POESearcherInterface {
         border-color: #0066cc !important;
       }
 
+      .poe-all-checkbox-container {
+        padding: 2px 0 !important;
+        margin-bottom: 3px !important;
+      }
+
+      .poe-all-checkbox-label {
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        cursor: pointer !important;
+        font-weight: 600 !important;
+        font-size: 14px !important;
+        color: #333 !important;
+      }
+
+      .poe-all-checkbox-text {
+        color: #000000 !important;
+        font-size: 12px !important;
+        line-height: 1.4 !important;
+      }
+
       .poe-status {
         margin: 12px 0 !important;
         padding: 12px 16px !important;
@@ -548,8 +569,8 @@ class POESearcherInterface {
 
       /* Simple POE-style Stats */
       .poe-item-header {
-        padding: 8px 0 6px 0 !important;
-        margin-bottom: 8px !important;
+        padding: 4px 0 2px 0 !important;
+        margin-bottom: 4px !important;
         position: relative !important;
         z-index: 2 !important;
         display: flex !important;
@@ -607,9 +628,9 @@ class POESearcherInterface {
       }
 
       .poe-description-section {
-        padding: 8px 0 !important;
+        padding: 2px 0 !important;
         border-bottom: 1px solid rgba(0,0,0,0.08) !important;
-        margin-bottom: 10px !important;
+        margin-bottom: 6px !important;
       }
 
       .poe-modifiers-section {
@@ -1063,10 +1084,10 @@ class POESearcherInterface {
 
   // Show preview with POE-style layout
   // Helper function to get scaled value display
-  getScaledValueDisplay(stat, scalePercent, isMapped = true, isColorblindMode = false) {
+  getScaledValueDisplay(stat, scalePercent, isMapped = true, isColorblindMode = false, itemClass = null) {
     if (scalePercent === 100) return ''
 
-    const mapping = window.findStatMapping(stat)
+    const mapping = window.findStatMapping(stat, itemClass)
     if (!mapping || !mapping.value) return ''
 
     const originalValue = mapping.value
@@ -1108,7 +1129,7 @@ class POESearcherInterface {
 
       // Process explicit stats
       parsed.stats.forEach(stat => {
-        const mapping = window.findStatMapping(stat)
+        const mapping = window.findStatMapping(stat, parsed.itemClass)
         if (mapping) {
           mappedStats.push(stat)
         } else {
@@ -1118,7 +1139,7 @@ class POESearcherInterface {
 
       // Process implicit stats
       parsed.implicitStats.forEach(stat => {
-        const mapping = window.findStatMapping(stat)
+        const mapping = window.findStatMapping(stat, parsed.itemClass)
         if (mapping) {
           mappedImplicits.push(stat)
         } else {
@@ -1146,6 +1167,10 @@ class POESearcherInterface {
       console.log('Description stats:', parsed.descriptionStats)
       console.log('Implicit stats:', parsed.implicitStats)
 
+      // Store stats info for later use
+      const totalMappedStats = mappedImplicits.length + mappedStats.length
+      const hasAnyStats = totalMappedStats > 0 || unmappedImplicits.length > 0 || unmappedStats.length > 0
+
       // Add implicit stats first if they exist
       if (mappedImplicits.length > 0 || unmappedImplicits.length > 0) {
         content += `
@@ -1155,7 +1180,7 @@ class POESearcherInterface {
 
         // Add mapped implicit stats (green - will be searched)
         mappedImplicits.forEach((stat, index) => {
-          const scaledDisplay = this.getScaledValueDisplay(stat, scalePercent, true, isColorblindMode)
+          const scaledDisplay = this.getScaledValueDisplay(stat, scalePercent, true, isColorblindMode, parsed.itemClass)
           content += `<div class="poe-stat-line mapped implicit">
             <label class="poe-stat-checkbox-label">
               <input type="checkbox" class="poe-stat-checkbox" data-stat="${stat}" data-type="implicit" data-index="${index}" checked>
@@ -1199,6 +1224,18 @@ class POESearcherInterface {
         `
       }
 
+      // Add "All" checkbox if there are any stats
+      if (hasAnyStats) {
+        content += `
+          <div class="poe-all-checkbox-container">
+            <label class="poe-all-checkbox-label">
+              <input type="checkbox" id="poe-all-checkbox" class="poe-stat-checkbox" ${totalMappedStats > 0 ? 'checked' : ''}>
+              <span class="poe-all-checkbox-text">(All)</span>
+            </label>
+          </div>
+        `
+      }
+
       // Add explicit modifier stats if they exist
       if (mappedStats.length > 0 || unmappedStats.length > 0) {
         content += `
@@ -1208,7 +1245,7 @@ class POESearcherInterface {
 
         // Add mapped stats (green - will be searched)
         mappedStats.forEach((stat, index) => {
-          const scaledDisplay = this.getScaledValueDisplay(stat, scalePercent, true, isColorblindMode)
+          const scaledDisplay = this.getScaledValueDisplay(stat, scalePercent, true, isColorblindMode, parsed.itemClass)
           content += `<div class="poe-stat-line mapped">
             <label class="poe-stat-checkbox-label">
               <input type="checkbox" class="poe-stat-checkbox" data-stat="${stat}" data-type="explicit" data-index="${index}" checked>
@@ -1235,6 +1272,59 @@ class POESearcherInterface {
 
       previewContent.innerHTML = content
       preview.style.display = 'block'
+
+      // Add event handlers for "All" checkbox with proper indeterminate state
+      const allCheckbox = this.container.querySelector('#poe-all-checkbox')
+      if (allCheckbox) {
+        // Function to update the "All" checkbox state based on individual checkboxes
+        const updateAllCheckboxState = () => {
+          const statCheckboxes = this.container.querySelectorAll('.poe-stat-checkbox:not(#poe-all-checkbox):not(:disabled)')
+          const checkedCount = this.container.querySelectorAll('.poe-stat-checkbox:not(#poe-all-checkbox):not(:disabled):checked').length
+          const totalCount = statCheckboxes.length
+
+          if (checkedCount === 0) {
+            // None checked
+            allCheckbox.checked = false
+            allCheckbox.indeterminate = false
+          } else if (checkedCount === totalCount) {
+            // All checked
+            allCheckbox.checked = true
+            allCheckbox.indeterminate = false
+          } else {
+            // Some checked (indeterminate state)
+            allCheckbox.checked = false
+            allCheckbox.indeterminate = true
+          }
+        }
+
+        // Handle "All" checkbox clicks
+        allCheckbox.addEventListener('change', (e) => {
+          const statCheckboxes = this.container.querySelectorAll('.poe-stat-checkbox:not(#poe-all-checkbox):not(:disabled)')
+
+          if (allCheckbox.checked) {
+            // If now checked, check all
+            statCheckboxes.forEach(checkbox => {
+              checkbox.checked = true
+            })
+            allCheckbox.indeterminate = false
+          } else {
+            // If now unchecked, uncheck all
+            statCheckboxes.forEach(checkbox => {
+              checkbox.checked = false
+            })
+            allCheckbox.indeterminate = false
+          }
+        })
+
+        // Add event listeners to individual checkboxes to update "All" state
+        const statCheckboxes = this.container.querySelectorAll('.poe-stat-checkbox:not(#poe-all-checkbox):not(:disabled)')
+        statCheckboxes.forEach(checkbox => {
+          checkbox.addEventListener('change', updateAllCheckboxState)
+        })
+
+        // Set initial state
+        updateAllCheckboxState()
+      }
     }
   }
 
