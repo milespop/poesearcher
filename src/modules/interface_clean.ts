@@ -1353,6 +1353,16 @@ export class POESearcherInterface {
           if (result.scaleValue) {
             scaleSlider.value = result.scaleValue;
             scaleValue.textContent = `${result.scaleValue}%`;
+
+            // If there's already a valid item in the textarea, refresh the preview with the correct scale
+            const textarea = this.container!.querySelector<HTMLTextAreaElement>('#poe-item-input');
+            if (textarea && textarea.value.trim()) {
+              const validation = (window as any).validatePOEItemFormat(textarea.value.trim()) as ValidationResult;
+              if (validation.isValid) {
+                const parsed = (window as any).parseItem(textarea.value.trim()) as ParsedItem;
+                this.showPreview(parsed);
+              }
+            }
           }
         });
       } catch (e) {
