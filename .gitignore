@@ -1,6 +1,7 @@
 # Vaaaaaber
 .claude
 
+
 context/
 # Dependencies
 node_modules/
@@ -11,6 +12,8 @@ yarn-error.log*
 # Build outputs
 dist/
 build/
+poesearcher.zip
+image-*.png
 
 # Environment files
 .env

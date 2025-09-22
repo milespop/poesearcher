@@ -11,6 +11,7 @@ interface StorageResult {
   scaleValue?: string;
   delayProfile?: 'safe' | 'lightning';
   logLevel?: number;
+  minimizeAfterSearch?: boolean;
 }
 
 interface StatMapping {
@@ -26,11 +27,13 @@ export class POESearcherInterface {
   private isExecuting: boolean = false;
   private _pasteHandler: ((e: ClipboardEvent) => void) | null = null;
   private _searchHandler: ((e: MouseEvent) => void) | null = null;
+  private _clearHandler: ((e: MouseEvent) => void) | null = null;
   private _scaleHandler: ((e: Event) => void) | null = null;
   private _optionsHandler: (() => void) | null = null;
   private _colorblindHandler: ((e: Event) => void) | null = null;
   private _delayProfileHandler: ((e: Event) => void) | null = null;
   private _logLevelHandler: ((e: Event) => void) | null = null;
+  private _minimizeHandler: ((e: Event) => void) | null = null;
 
   // Initialize the interface
   async init(): Promise<void> {
@@ -217,8 +220,39 @@ export class POESearcherInterface {
         font-weight: 400 !important;
       }
 
+      /* Input field states for visual feedback */
+      .poe-textarea.success {
+        border-color: #059669 !important;
+        background: rgba(5, 150, 105, 0.04) !important;
+        box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.08), 0 2px 12px rgba(0,0,0,0.08) !important;
+      }
+
+      .poe-colorblind-mode .poe-textarea.success {
+        border-color: #0066cc !important;
+        background: rgba(0, 102, 204, 0.04) !important;
+        box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.08), 0 2px 12px rgba(0,0,0,0.08) !important;
+      }
+
+      .poe-textarea.error {
+        border-color: #dc2626 !important;
+        background: rgba(220, 38, 38, 0.04) !important;
+        box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.08), 0 2px 12px rgba(0,0,0,0.08) !important;
+      }
+
+      .poe-colorblind-mode .poe-textarea.error {
+        border-color: #666666 !important;
+        background: rgba(102, 102, 102, 0.04) !important;
+        box-shadow: 0 0 0 3px rgba(102, 102, 102, 0.08), 0 2px 12px rgba(0,0,0,0.08) !important;
+      }
+
+      .poe-button-row {
+        display: flex !important;
+        gap: 12px !important;
+        margin-top: 20px !important;
+      }
+
       .poe-search-btn {
-        width: 100% !important;
+        flex: 1 !important;
         padding: 16px 24px !important;
         background: #000000 !important;
         color: white !important;
@@ -231,10 +265,32 @@ export class POESearcherInterface {
         align-items: center !important;
         justify-content: center !important;
         gap: 12px !important;
-        margin-top: 20px !important;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
         letter-spacing: -0.25px !important;
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12) !important;
+        min-height: 56px !important;
+        position: relative !important;
+        overflow: hidden !important;
+      }
+
+      .poe-clear-btn {
+        flex: 0 0 auto !important;
+        width: 120px !important;
+        padding: 16px 20px !important;
+        background: #6b7280 !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 16px !important;
+        font-size: 16px !important;
+        font-weight: 500 !important;
+        cursor: pointer !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 8px !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        letter-spacing: -0.25px !important;
+        box-shadow: 0 8px 32px rgba(107, 114, 128, 0.12) !important;
         min-height: 56px !important;
         position: relative !important;
         overflow: hidden !important;
@@ -277,6 +333,45 @@ export class POESearcherInterface {
       .poe-search-btn:focus {
         outline: none !important;
         box-shadow: 0 2px 8px rgba(25, 118, 210, 0.2), 0 0 0 3px rgba(25, 118, 210, 0.3) !important;
+      }
+
+      .poe-clear-btn::before {
+        content: '' !important;
+        position: absolute !important;
+        top: 0 !important;
+        left: -100% !important;
+        width: 100% !important;
+        height: 100% !important;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent) !important;
+        transition: left 0.6s !important;
+      }
+
+      .poe-clear-btn:hover::before {
+        left: 100% !important;
+      }
+
+      .poe-clear-btn:hover:not(:disabled) {
+        background: #4b5563 !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 16px 48px rgba(107, 114, 128, 0.2) !important;
+      }
+
+      .poe-clear-btn:active:not(:disabled) {
+        transform: translateY(0) !important;
+        box-shadow: 0 2px 8px rgba(107, 114, 128, 0.3) !important;
+      }
+
+      .poe-clear-btn:disabled {
+        background: #e0e0e0 !important;
+        color: #9e9e9e !important;
+        cursor: not-allowed !important;
+        transform: none !important;
+        box-shadow: none !important;
+      }
+
+      .poe-clear-btn:focus {
+        outline: none !important;
+        box-shadow: 0 2px 8px rgba(107, 114, 128, 0.2), 0 0 0 3px rgba(107, 114, 128, 0.3) !important;
       }
 
       .poe-scale-container {
@@ -556,9 +651,12 @@ export class POESearcherInterface {
         font-weight: 400 !important;
         letter-spacing: -0.1px !important;
         box-shadow: 0 2px 8px rgba(0,0,0,0.04) !important;
-        display: flex !important;
         align-items: center !important;
         gap: 8px !important;
+      }
+
+      .poe-status:not([style*="display: none"]) {
+        display: flex !important;
       }
 
       .poe-status::before {
@@ -842,7 +940,7 @@ export class POESearcherInterface {
   private getCollapsedHTML(): string {
     return `
       <button class="poe-fab" aria-label="PoE2 Searcher" title="PoE2 Searcher">
-        <img src="${chrome.runtime.getURL('search-icon.png')}" alt="Search" style="width: 20px; height: 20px;">
+        <img src="${chrome.runtime.getURL('icons/icon32.png')}" alt="Search" style="width: 20px; height: 20px;">
         <div class="magnifying-glass">🔍</div>
       </button>
     `;
@@ -894,10 +992,10 @@ export class POESearcherInterface {
           <textarea
             id="poe-item-input"
             class="poe-textarea"
-            placeholder="Copy item from POE (Ctrl+C) and paste here..."
+            placeholder="Copy item from POE2 (Hover item -> Ctrl+C) and paste (Ctrl+V) here..."
             rows="6"></textarea>
 
-          <div id="poe-status" class="poe-status">
+          <div id="poe-status" class="poe-status" style="display: none;">
             Ready to search! Paste item data above.
           </div>
 
@@ -920,9 +1018,22 @@ export class POESearcherInterface {
             />
           </div>
 
-          <button id="poe-search-btn" class="poe-search-btn">
-            Search
-          </button>
+          <div class="poe-setting-group" style="margin-top: 16px; padding-top: 0; border-bottom: none;">
+            <label class="poe-setting-label">Minimize after search:</label>
+            <label class="poe-checkbox-container">
+              <input type="checkbox" id="poe-minimize-checkbox" class="poe-checkbox" checked>
+              <span class="poe-checkbox-custom"></span>
+            </label>
+          </div>
+
+          <div class="poe-button-row">
+            <button id="poe-clear-btn" class="poe-clear-btn">
+              Clear
+            </button>
+            <button id="poe-search-btn" class="poe-search-btn">
+              Search
+            </button>
+          </div>
         </div>
       </div>
     `;
@@ -1092,6 +1203,10 @@ export class POESearcherInterface {
       const searchBtn = this.container!.querySelector<HTMLButtonElement>('#poe-search-btn');
       if (searchBtn) searchBtn.removeEventListener('click', this._searchHandler as EventListener);
     }
+    if (this._clearHandler) {
+      const clearBtn = this.container!.querySelector<HTMLButtonElement>('#poe-clear-btn');
+      if (clearBtn) clearBtn.removeEventListener('click', this._clearHandler as EventListener);
+    }
     if (this._scaleHandler) {
       const scaleSlider = this.container!.querySelector<HTMLInputElement>('#poe-scale-slider');
       if (scaleSlider) scaleSlider.removeEventListener('input', this._scaleHandler);
@@ -1114,6 +1229,10 @@ export class POESearcherInterface {
       const logLevelSelect = this.container!.querySelector<HTMLSelectElement>('#poe-log-level');
       if (logLevelSelect) logLevelSelect.removeEventListener('change', this._logLevelHandler);
     }
+    if (this._minimizeHandler) {
+      const minimizeCheckbox = this.container!.querySelector<HTMLInputElement>('#poe-minimize-checkbox');
+      if (minimizeCheckbox) minimizeCheckbox.removeEventListener('change', this._minimizeHandler);
+    }
   }
 
   // Setup event handlers
@@ -1130,20 +1249,20 @@ export class POESearcherInterface {
       setTimeout(() => {
         const text = textarea!.value.trim();
         if (!text) {
-          this.updateStatus('Please paste item data', 'warning');
+          this.updateInputState('neutral');
           this.hidePreview();
           return;
         }
 
         const validation = (window as any).validatePOEItemFormat(text) as ValidationResult;
         if (!validation.isValid) {
-          this.updateStatus(`Invalid format: ${validation.error}`, 'error');
+          this.updateInputState('error', `Invalid format: ${validation.error}`);
           this.hidePreview();
           return;
         }
 
         const parsed = (window as any).parseItem(text) as ParsedItem;
-        this.updateStatus(`Parsed: ${parsed.itemClass} • ${parsed.rarity} • ${parsed.stats.length} stats`, 'success');
+        this.updateInputState('success');
         this.showPreview(parsed);
       }, 100);
     };
@@ -1159,7 +1278,7 @@ export class POESearcherInterface {
             const validation = (window as any).validatePOEItemFormat(result.lastItem) as ValidationResult;
             if (validation.isValid) {
               const parsed = (window as any).parseItem(result.lastItem) as ParsedItem;
-              this.updateStatus(`Loaded: ${parsed.itemClass} • ${parsed.rarity} • ${parsed.stats.length} stats`, 'success');
+              this.updateInputState('success');
               this.showPreview(parsed);
             } else {
               textarea.value = '';
@@ -1171,15 +1290,28 @@ export class POESearcherInterface {
         this.logger.warn('Could not load saved item data');
       }
 
-      // Auto-save
+      // Auto-save and validate on input
       textarea.addEventListener('input', () => {
-        if (textarea.value.trim()) {
+        const text = textarea.value.trim();
+        if (text) {
           try {
             chrome.storage.local.set({ lastItem: textarea.value });
           } catch (e) {
             // Ignore chrome API errors
           }
+
+          // Validate the current input
+          const validation = (window as any).validatePOEItemFormat(text) as ValidationResult;
+          if (!validation.isValid) {
+            this.updateInputState('error', `Invalid format: ${validation.error}`);
+            this.hidePreview();
+          } else {
+            const parsed = (window as any).parseItem(text) as ParsedItem;
+            this.updateInputState('success');
+            this.showPreview(parsed);
+          }
         } else {
+          this.updateInputState('neutral');
           this.hidePreview();
         }
       });
@@ -1233,13 +1365,13 @@ export class POESearcherInterface {
       searchBtn.addEventListener('click', async () => {
         const text = textarea!.value.trim();
         if (!text) {
-          this.updateStatus('Please paste item data first', 'warning');
+          this.updateInputState('neutral');
           return;
         }
 
         const validation = (window as any).validatePOEItemFormat(text) as ValidationResult;
         if (!validation.isValid) {
-          this.updateStatus(`Invalid format: ${validation.error}`, 'error');
+          this.updateInputState('error', `Invalid format: ${validation.error}`);
           return;
         }
 
@@ -1280,11 +1412,17 @@ export class POESearcherInterface {
           const totalChecked = checkedImplicitStats.length + checkedExplicitStats.length;
           this.updateStatus(`Searching... (${totalChecked} stats, Scale: ${scalePercent}%)`, 'info');
 
-          setTimeout(() => {
-            if (this.isExpanded && this.isExecuting) {
-              this.toggleInterface();
-            }
-          }, 500);
+          // Check if minimize after search is enabled and minimize immediately
+          const minimizeCheckbox = this.container!.querySelector<HTMLInputElement>('#poe-minimize-checkbox');
+          const shouldMinimize = minimizeCheckbox ? minimizeCheckbox.checked : true; // Default to true for backwards compatibility
+
+          if (shouldMinimize) {
+            setTimeout(() => {
+              if (this.isExpanded) {
+                this.toggleInterface();
+              }
+            }, 500); // Minimize during search execution
+          }
 
           const result = await (window as any).performSearch(filteredParsed, scalePercent);
 
@@ -1299,14 +1437,76 @@ export class POESearcherInterface {
         } finally {
           this.isExecuting = false;
           if (searchBtn) searchBtn.disabled = false;
-
-          setTimeout(() => {
-            if (this.isExpanded) {
-              this.toggleInterface();
-            }
-          }, 2000);
         }
       });
+    }
+
+    // Clear button
+    const clearBtn = this.container!.querySelector<HTMLButtonElement>('#poe-clear-btn');
+    if (clearBtn) {
+      this._clearHandler = () => {
+        // Clear the input field
+        if (textarea) {
+          textarea.value = '';
+        }
+
+        // Reset scale to 100%
+        const scaleSlider = this.container!.querySelector<HTMLInputElement>('#poe-scale-slider');
+        const scaleValue = this.container!.querySelector<HTMLSpanElement>('#poe-scale-value');
+        if (scaleSlider && scaleValue) {
+          scaleSlider.value = '100';
+          scaleValue.textContent = '100%';
+
+          // Save scale value
+          try {
+            chrome.storage.local.set({ scaleValue: 100 });
+          } catch (e) {
+            // Ignore chrome API errors
+          }
+        }
+
+        // Clear saved item data
+        try {
+          chrome.storage.local.remove(['lastItem']);
+        } catch (e) {
+          // Ignore chrome API errors
+        }
+
+        // Reset input state and hide preview
+        this.updateInputState('neutral');
+        this.hidePreview();
+      };
+
+      clearBtn.addEventListener('click', this._clearHandler as EventListener);
+    }
+
+    // Minimize after search checkbox
+    const minimizeCheckbox = this.container!.querySelector<HTMLInputElement>('#poe-minimize-checkbox');
+    if (minimizeCheckbox) {
+      this._minimizeHandler = (e: Event) => {
+        const target = e.target as HTMLInputElement;
+        const isEnabled = target.checked;
+
+        // Save preference
+        try {
+          chrome.storage.local.set({ minimizeAfterSearch: isEnabled });
+        } catch (e) {
+          // Ignore chrome API errors
+        }
+      };
+
+      minimizeCheckbox.addEventListener('change', this._minimizeHandler);
+
+      // Load saved preference
+      try {
+        chrome.storage.local.get(['minimizeAfterSearch'], (result: StorageResult) => {
+          if (result.minimizeAfterSearch !== undefined) {
+            minimizeCheckbox.checked = result.minimizeAfterSearch;
+          }
+        });
+      } catch (e) {
+        // Ignore chrome API errors
+      }
     }
   }
 
@@ -1316,6 +1516,34 @@ export class POESearcherInterface {
     if (statusBox) {
       statusBox.textContent = message;
       statusBox.className = `poe-status ${type}`;
+    }
+  }
+
+  // Update input field visual feedback
+  private updateInputState(state: 'neutral' | 'success' | 'error', errorMessage?: string): void {
+    const textarea = this.container!.querySelector<HTMLTextAreaElement>('#poe-item-input');
+    const statusBox = this.container!.querySelector<HTMLElement>('#poe-status');
+
+    if (textarea) {
+      // Remove existing state classes
+      textarea.classList.remove('success', 'error');
+
+      // Add new state class if not neutral
+      if (state !== 'neutral') {
+        textarea.classList.add(state);
+      }
+    }
+
+    if (statusBox) {
+      if (state === 'error' && errorMessage) {
+        // Show status box with error message
+        statusBox.textContent = errorMessage;
+        statusBox.className = 'poe-status error';
+        statusBox.style.display = 'block';
+      } else {
+        // Hide status box for success or neutral states
+        statusBox.style.display = 'none';
+      }
     }
   }
 
