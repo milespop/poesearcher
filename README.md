@@ -11,8 +11,11 @@ A modern TypeScript Chrome extension that automates item searching on the Path o
 - **Selective Filtering**: Choose which stats to include in your search with checkboxes
 - **Speed Profiles**: Choose between Safe (recommended) and Lightning (extreme speed) automation
 - **Colorblind Mode**: Modern toggle switch with alternative color scheme for better accessibility
-- **Modern UI**: Clean Material Design interface with custom search icon
+- **Modern UI**: Clean Material Design interface with custom search icon and visual input feedback
 - **Automatic Filter Selection**: Intelligently selects the correct filter variant from dropdowns
+- **Visual Input Feedback**: Input field changes color based on validation state (green/blue for valid, red/gray for errors)
+- **Clear Functionality**: Reset button to clear input and restore default scale settings
+- **Smart Status Display**: Status messages only appear during validation errors
 
 ## Installation
 
@@ -30,6 +33,8 @@ npm install
 npm run build
 ```
 
+**Note**: The build process now automatically syncs the version from `package.json` to all manifest files.
+
 3. Load in Chrome:
    - Open Chrome and navigate to `chrome://extensions/`
    - Enable "Developer mode" in the top right
@@ -46,12 +51,15 @@ The extension will be available on the Chrome Web Store (coming soon).
 2. The extension automatically loads - look for the floating search button with magnifying glass overlay
 3. Click the search button to expand the interface
 4. Paste your POE2 item text into the text area
+   - **Visual Feedback**: Input field will show green/blue border for valid items, red/gray for errors
+   - **Smart Status**: Error messages only appear when validation fails
 5. Adjust settings via the gear icon:
    - **Speed Profile**: Choose between Safe (recommended) or Lightning (extreme speed)
    - **Colorblind Mode**: Toggle alternative colors for better accessibility
 6. Adjust the scale slider if needed (default 100%)
 7. Uncheck any stats you don't want to search for using the checkboxes
-8. Click "Search Item" to automatically fill and submit the search
+8. Use the **Clear** button to reset input and scale to defaults
+9. Click "Search" to automatically fill and submit the search
 
 ## Architecture
 
@@ -81,6 +89,48 @@ dist/poesearcher/         # Built extension (load this in Chrome)
 ├── manifest.json         # Generated manifest
 ├── assets/              # Compiled and optimized modules
 └── icons/               # Extension and custom icons
+```
+
+
+### Example inputs:
+
+#### Valid input
+```
+Item Class: Bows
+Rarity: Rare
+Dusk Bane
+Gemini Bow
+--------
+Quality: +20% (augmented)
+Physical Damage: 70-128 (augmented)
+Lightning Damage: 7-243 (lightning)
+Critical Hit Chance: 5.00%
+Attacks per Second: 1.38 (augmented)
+--------
+Requires: Level 78, 163 Dex
+--------
+Sockets: S S
+--------
+Item Level: 79
+--------
+Adds 2 to 60 Lightning Damage (rune)
+--------
+Bow Attacks fire an additional Arrow (implicit)
+--------
+Adds 19 to 35 Physical Damage
+Adds 5 to 183 Lightning Damage
+25% increased Attack Speed
++4 to Level of all Attack Skills
+Gain 40 Mana per Enemy Killed
+67% increased Elemental Damage with Attacks (desecrated)
+```
+
+#### Invalid input
+```
+This is not a valid POE item format
+Just some random text that won't parse correctly
+Missing required headers and structure
+We require a Poe2 item here
 ```
 
 ### Core Components
@@ -172,14 +222,29 @@ Material Design-inspired interface with full TypeScript typing and modern UX pat
   - Formula: `scaledValue = Math.floor(originalValue * scale / 100)`
   - Prevents values from going below 1
 
+- **Visual Input Feedback**: Real-time input validation with color-coded borders
+  - **Valid Items**: Green border (blue in colorblind mode) with light background tint
+  - **Invalid Items**: Red border (gray in colorblind mode) with error indication
+  - **Neutral State**: Default gray border for empty input
+
+- **Smart Status Display**:
+  - Status section only appears during validation errors
+  - Hidden by default and when input is valid or empty
+  - Provides clear error messages for invalid item formats
+
+- **Clear Functionality**:
+  - **Clear Button**: Secondary button positioned left of Search button
+  - **Reset Behavior**: Clears input text AND resets scale to 100%
+  - **Storage Cleanup**: Removes saved item data from Chrome storage
+
 - **Smart Stat Checkboxes**: Advanced checkbox system with "All" toggle
   - Mapped stats: Enabled and checked by default
   - Unmapped stats: Disabled (shown in colorblind-aware colors)
   - Bulk selection with indeterminate state handling
 
 - **Adaptive Color System**:
-  - Normal mode: Green for mapped, red for unmapped stats
-  - Colorblind mode: Blue for mapped, dark gray for unmapped stats
+  - Normal mode: Green for valid/mapped, red for error/unmapped stats
+  - Colorblind mode: Blue for valid/mapped, gray for error/unmapped stats
   - Modern toggle switch for accessibility settings
 
 **Settings Management:**
@@ -191,14 +256,23 @@ Material Design-inspired interface with full TypeScript typing and modern UX pat
 
 ### Build System
 
-The project uses a modern TypeScript build system:
+The project uses a modern TypeScript build system with automated version management:
 
 ```bash
 # Development with hot reload
 npm run dev
 
-# Production build
+# Production build (includes version sync)
 npm run build
+
+# Create distributable zip package
+npm run package
+
+# Create zip from existing build
+npm run zip
+
+# Sync version from package.json to manifest files
+npm run sync-version
 
 # Type checking only
 npm run typecheck
@@ -208,11 +282,15 @@ npm run build:force
 ```
 
 **Build Process:**
-1. Clean dist folder (via rimraf)
-2. TypeScript type checking (via prebuild hook)
-3. Vite bundling with CRXJS plugin
-4. Chrome extension optimization
-5. Asset optimization and hashing
+1. **Version Sync**: Automatically copies version from `package.json` to manifest files
+2. **Clean**: Remove dist folder (via rimraf)
+3. **Type Check**: Full TypeScript validation (via prebuild hook)
+4. **Bundle**: Vite bundling with CRXJS plugin
+5. **Optimize**: Chrome extension optimization and asset hashing
+
+**Package Process:**
+1. **Build**: Complete build with version sync
+2. **Zip**: Creates `poesearcher.zip` ready for Chrome Web Store upload
 
 Output: `dist/poesearcher/` - ready for Chrome extension loading
 
@@ -276,12 +354,30 @@ The extension currently supports 115+ stat mappings including:
 npm run build
 ```
 
+### Version Management
+
+The project includes automated version synchronization:
+
+**Manual Version Update:**
+1. Update version in `package.json` only
+2. Run `npm run sync-version` to update manifest files
+3. Or run `npm run build` (includes automatic sync)
+
+**Automatic Sync:**
+- Version sync runs automatically during build process
+- Updates both `src/manifest.json` and `src/extension/manifest.json`
+- Ensures version consistency across all files
+
 ### Testing
 1. Build the extension: `npm run build`
 2. Load the `dist/poesearcher/` folder in Chrome extensions
 3. Navigate to POE2 trade site
-4. Test with various item texts
-5. Check console for debug output and TypeScript errors
+4. Test with various item texts:
+   - **Valid items**: Should show green/blue border with parsed preview
+   - **Invalid items**: Should show red/gray border with error message
+   - **Empty input**: Should show default gray border, no status message
+5. Test Clear button functionality (resets input and scale)
+6. Check console for debug output and TypeScript errors
 
 ### Debugging
 - All modules include comprehensive logging
@@ -319,9 +415,13 @@ npm run build
    npm run dev  # for development with hot reload
    ```
 4. Add your changes with appropriate TypeScript typing
-5. Test thoroughly with various item types
+5. Test thoroughly with various item types and UI interactions:
+   - Visual input feedback (colors, borders)
+   - Clear button functionality
+   - Status message display behavior
 6. Ensure type checking passes: `npm run typecheck`
-7. Submit a pull request
+7. Test packaging: `npm run package`
+8. Submit a pull request
 
 ## License
 
