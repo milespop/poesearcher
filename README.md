@@ -11,10 +11,15 @@ A modern TypeScript Chrome extension that automates item searching on the Path o
    - Download the latest `poesearcher.zip` file
    - Extract the zip file to a folder
 
-2. **Load in Chrome**:
+2. **Verify the extracted folder**:
+   - The extracted folder should contain files directly at the root level
+   - Expected files: `manifest.json`, `icons/` folder, `assets/` folder
+   - Do NOT use a nested folder structure
+
+3. **Load in Chrome**:
    - Open Chrome and navigate to `chrome://extensions/`
    - Enable "Developer mode" in the top right
-   - Click "Load unpacked" and select the extracted folder
+   - Click "Load unpacked" and select the extracted poesearcher folder
    - The extension icon will appear in your toolbar
 
 The extension will be available on the Chrome Web Store (coming soon).
