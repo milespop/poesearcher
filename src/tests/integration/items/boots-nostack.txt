@@ -1,0 +1,17 @@
+Item Class: Boots
+Rarity: Rare
+Entropy March
+Sandsworn Sandals
+--------
+Energy Shield: 107 (augmented)
+--------
+Requires: Level 75, 65 (augmented) Int
+--------
+Item Level: 81
+--------
+30% increased Movement Speed
+43% increased Energy Shield
++64 to maximum Life
+35% reduced Attribute Requirements
++14% to Lightning Resistance
+42% reduced Freeze Duration on you

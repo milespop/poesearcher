@@ -10,6 +10,7 @@ export interface StatMapping {
   filterText: string;
   group: 'explicit' | 'implicit' | 'pseudo' | 'fractured' | 'desecrated';
   extractValue: (statText: string) => number | null;
+  dynamic?: boolean; // Optional flag for stats that might not appear in initial dropdown
 }
 
 export interface StatMappingResult extends StatMapping {
@@ -226,6 +227,10 @@ const POE_STAT_MAPPINGS = {
       filterText: '+# total to Strength',
       group: 'pseudo' as const,
       extractValue: (statText: string): number | null => {
+        // Don't match "to Strength and Intelligence"
+        if (statText.includes('and Intelligence')) {
+          return null;
+        }
         const match = statText.match(/\+?(\d+)\s+(?:total\s+)?to Strength/);
         return match ? parseInt(match[1]) : null;
       }
@@ -234,6 +239,10 @@ const POE_STAT_MAPPINGS = {
       filterText: '+# total to Intelligence',
       group: 'pseudo' as const,
       extractValue: (statText: string): number | null => {
+        // Don't match "to Strength and Intelligence"
+        if (statText.includes('Strength and')) {
+          return null;
+        }
         const match = statText.match(/\+?(\d+)\s+(?:total\s+)?to Intelligence/);
         return match ? parseInt(match[1]) : null;
       }
@@ -243,6 +252,14 @@ const POE_STAT_MAPPINGS = {
       group: 'explicit' as const,
       extractValue: (statText: string): number | null => {
         const match = statText.match(/\+?(\d+)\s+to Dexterity/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    'to Strength and Intelligence': {
+      filterText: '# to Strength and Intelligence',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/\+?(\d+)\s+to Strength and Intelligence/);
         return match ? parseInt(match[1]) : null;
       }
     },
@@ -282,6 +299,10 @@ const POE_STAT_MAPPINGS = {
       filterText: '#% increased Energy Shield',
       group: 'explicit' as const,
       extractValue: (statText: string): number | null => {
+        // Don't match "increased Energy Shield Recharge Rate" - that has its own pattern
+        if (statText.includes('Recharge Rate')) {
+          return null;
+        }
         const match = statText.match(/(\d+)%\s+increased Energy Shield/);
         return match ? parseInt(match[1]) : null;
       }
@@ -311,6 +332,46 @@ const POE_STAT_MAPPINGS = {
       group: 'explicit' as const,
       extractValue: (statText: string): number | null => {
         const match = statText.match(/(\d+)%\s+increased maximum Energy Shield/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    'faster start of Energy Shield Recharge': {
+      filterText: '#% faster start of Energy Shield Recharge',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)%\s+faster start of Energy Shield Recharge/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    'increased Energy Shield Recharge Rate': {
+      filterText: '#% increased Energy Shield Recharge Rate',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)%\s+increased Energy Shield Recharge Rate/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    'of Damage taken bypasses Energy Shield': {
+      filterText: '#% of Damage taken bypasses Energy Shield',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)%\s+of Damage taken bypasses Energy Shield/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    'Gain additional Stun Threshold equal to.*of maximum Energy Shield': {
+      filterText: 'Gain additional Stun Threshold equal to #% of maximum Energy Shield',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/Gain additional Stun Threshold equal to (\d+)%\s+of maximum Energy Shield/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    'Gain additional Ailment Threshold equal to.*of maximum Energy Shield': {
+      filterText: 'Gain additional Ailment Threshold equal to #% of maximum Energy Shield',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/Gain additional Ailment Threshold equal to (\d+)%\s+of maximum Energy Shield/);
         return match ? parseInt(match[1]) : null;
       }
     },
@@ -1240,7 +1301,8 @@ const POE_STAT_MAPPINGS = {
       filterText: 'Leech #% of Physical Attack Damage as Life',
       group: 'explicit' as const,
       extractValue: (statText: string): number | null => {
-        const match = statText.match(/Leech (\d+(?:\.\d+)?)% of Physical Attack Damage as Life/);
+        // Match both "Physical Attack Damage" and "Physical Damage"
+        const match = statText.match(/Leech(?:es)? (\d+(?:\.\d+)?)% of Physical (?:Attack )?Damage as Life/);
         return match ? parseFloat(match[1]) : null;
       }
     },
@@ -1248,7 +1310,8 @@ const POE_STAT_MAPPINGS = {
       filterText: 'Leech #% of Physical Attack Damage as Mana',
       group: 'explicit' as const,
       extractValue: (statText: string): number | null => {
-        const match = statText.match(/Leech (\d+(?:\.\d+)?)% of Physical Attack Damage as Mana/);
+        // Match both "Physical Attack Damage" and "Physical Damage"
+        const match = statText.match(/Leech(?:es)? (\d+(?:\.\d+)?)% of Physical (?:Attack )?Damage as Mana/);
         return match ? parseFloat(match[1]) : null;
       }
     },
@@ -1321,6 +1384,155 @@ const POE_STAT_MAPPINGS = {
       group: 'explicit' as const,
       extractValue: (statText: string): number | null => {
         const match = statText.match(/(\d+)% of Maximum Life Converted to Energy Shield/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+
+    // === WEAPON MODIFIERS ===
+    '% increased Melee Strike Range with this weapon': {
+      filterText: '#% increased Melee Strike Range with this weapon',
+      group: 'explicit' as const,
+      dynamic: true,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)% increased Melee Strike Range with this weapon/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+
+    // === ATTRIBUTE REQUIREMENTS ===
+    '% reduced Attribute Requirements': {
+      filterText: '#% reduced Attribute Requirements',
+      group: 'explicit' as const,
+      dynamic: true,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)% reduced Attribute Requirements/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+
+    // === AILMENT DURATION ===
+    '% reduced Freeze Duration on you': {
+      filterText: '#% reduced Freeze Duration on you',
+      group: 'explicit' as const,
+      dynamic: true,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)% reduced Freeze Duration on you/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    '% reduced Ignite Duration on you': {
+      filterText: '#% reduced Ignite Duration on you',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)% reduced Ignite Duration on you/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    '% reduced Chill Duration on you': {
+      filterText: '#% reduced Chill Duration on you',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)% reduced Chill Duration on you/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    '% reduced Shock duration on you': {
+      filterText: '#% reduced Shock duration on you',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)% reduced Shock duration on you/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+
+    // === STATUS EFFECT BUILDUP & MAGNITUDE ===
+    '% increased Freeze Buildup': {
+      filterText: '#% increased Freeze Buildup',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)% increased Freeze Buildup/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    '% increased Ignite Magnitude': {
+      filterText: '#% increased Ignite Magnitude',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)%\s+increased\s+Ignite\s+Magnitude/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    '% increased Shock Duration': {
+      filterText: '#% increased Shock Duration',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)% increased Shock Duration/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    '% increased Magnitude of Shock you inflict': {
+      filterText: '#% increased Magnitude of Shock you inflict',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)% increased Magnitude of Shock you inflict/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    '% increased Magnitude of Bleeding you inflict': {
+      filterText: '#% increased Magnitude of Bleeding you inflict',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)% increased Magnitude of Bleeding you inflict/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    '% increased Magnitude of Poison you inflict': {
+      filterText: '#% increased Magnitude of Poison you inflict',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)% increased Magnitude of Poison you inflict/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    '% increased Magnitude of Chill you inflict': {
+      filterText: '#% increased Magnitude of Chill you inflict',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)% increased Magnitude of Chill you inflict/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    '% increased Magnitude of Damaging Ailments you inflict with Critical Hits': {
+      filterText: '#% increased Magnitude of Damaging Ailments you inflict with Critical Hits',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)% increased Magnitude of Damaging Ailments you inflict with Critical Hits/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+
+    // === AILMENT CHANCE ===
+    '% chance to inflict Bleeding on Hit': {
+      filterText: '#% chance to inflict Bleeding on Hit',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)% chance to inflict Bleeding on Hit/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    '% chance to Poison on Hit': {
+      filterText: '#% chance to Poison on Hit',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)% chance to Poison on Hit/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    '% chance to Blind Enemies on Hit with Attacks': {
+      filterText: '#% chance to Blind Enemies on Hit with Attacks',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)% chance to Blind Enemies on Hit with Attacks/);
         return match ? parseInt(match[1]) : null;
       }
     },

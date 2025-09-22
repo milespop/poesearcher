@@ -1,0 +1,21 @@
+Item Class: Spears
+Rarity: Rare
+Pandemonium Edge
+Grand Spear
+--------
+Physical Damage: 46-85
+Elemental Damage: 98-134 (fire), 3-107 (lightning)
+Critical Hit Chance: 5.00%
+Attacks per Second: 1.50
+--------
+Requires: Level 79, 50 Str, 127 (unmet) Dex
+--------
+Item Level: 84
+--------
+Grants Skill: Spear Throw
+--------
+Adds 98 to 134 Fire Damage
+Adds 3 to 107 Lightning Damage
++32 to Strength
+Leeches 7.46% of Physical Damage as Mana
+28% increased Stun Duration

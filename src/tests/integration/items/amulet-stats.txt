@@ -1,0 +1,17 @@
+Item Class: Amulets
+Rarity: Rare
+Cataclysm Choker
+Solar Amulet
+--------
+Requires: Level 60
+--------
+Item Level: 80
+--------
++11 to Spirit (implicit)
+--------
+48% increased Armour
+43% increased Evasion Rating
+35% increased maximum Energy Shield
++23 to Dexterity
++23% to Fire Resistance
+22.5 Life Regeneration per second

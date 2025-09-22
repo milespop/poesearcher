@@ -1,0 +1,19 @@
+Item Class: Staves
+Rarity: Rare
+Behemoth Spire
+Ashen Staff
+--------
+Requires: Level 41, 74 Int
+--------
+Item Level: 43
+--------
+Grants Skill: Level 11 Firebolt
+--------
+Gain 31% of Damage as Extra Cold Damage
+36% increased Spell Damage
++68 to maximum Mana
++4 to Level of all Fire Spell Skills
+75% increased Critical Hit Chance for Spells
+73% increased Mana Regeneration Rate
+--------
+Note: ~price 5 exalted

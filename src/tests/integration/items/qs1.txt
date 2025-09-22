@@ -1,0 +1,22 @@
+Item Class: Quarterstaves
+Rarity: Rare
+Armageddon Weaver
+Striking Quarterstaff
+--------
+Physical Damage: 102-213 (augmented)
+Elemental Damage: 52-72 (fire), 41-65 (cold)
+Critical Hit Chance: 10.00%
+Attacks per Second: 1.40
+--------
+Requires: Level 77, 127 (unmet) Dex, 50 Int
+--------
+Item Level: 84
+--------
+16% increased Melee Strike Range with this weapon (implicit)
+--------
+92% increased Physical Damage
+Adds 52 to 72 Fire Damage
+Adds 41 to 65 Cold Damage
++32 to Dexterity
+Leeches 9.17% of Physical Damage as Life
+Causes 50% increased Stun Buildup

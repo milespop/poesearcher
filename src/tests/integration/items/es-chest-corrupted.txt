@@ -1,0 +1,27 @@
+Item Class: Body Armours
+Rarity: Rare
+Sol Veil
+Sacramental Robe
+--------
+Quality: +20% (augmented)
+Energy Shield: 416 (augmented)
+--------
+Requires: Level 75, 121 Int
+--------
+Sockets: S S 
+--------
+Item Level: 84
+--------
++80 to maximum Life (rune)
+--------
+47% faster start of Energy Shield Recharge (implicit)
+--------
++93 to maximum Energy Shield
+41% increased Energy Shield
++235 to maximum Life
++41% to Fire Resistance
+23.8 Life Regeneration per second
++12 to Strength and Intelligence (desecrated)
+--------
+Corrupted
+--------
