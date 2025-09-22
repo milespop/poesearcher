@@ -2,22 +2,22 @@
 
 A modern TypeScript Chrome extension that automates item searching on the Path of Exile 2 trade website by parsing item text and automatically filling in search filters.
 
-## Features
-
-- **Automatic Item Parsing**: Paste POE2 item text to automatically extract stats and modifiers
-- **Smart Stat Mapping**: Maps 85+ item stats to their corresponding trade site filters
-- **Mutation Type Support**: Handles explicit, implicit, desecrated, fractured, and pseudo modifiers
-- **Value Scaling**: Scale down stat values (1-100%) for broader search results
-- **Selective Filtering**: Choose which stats to include in your search with checkboxes
-- **Speed Profiles**: Choose between Safe (recommended) and Lightning (extreme speed) search engine
-- **Colorblind Mode**: Modern toggle switch with alternative color scheme for better accessibility
-- **Modern UI**: Clean Material Design interface with custom search icon and visual input feedback
-- **Automatic Filter Selection**: Intelligently selects the correct filter variant from dropdowns
-- **Visual Input Feedback**: Input field changes color based on validation state (green/blue for valid, red/gray for errors)
-- **Clear Functionality**: Reset button to clear input and restore default scale settings
-- **Smart Status Display**: Status messages only appear during validation errors
-
 ## Installation
+
+### For Users
+
+1. **Download from GitHub Releases**:
+   - Go to [Releases](https://github.com/milespop/poesearcher/releases)
+   - Download the latest `poesearcher.zip` file
+   - Extract the zip file to a folder
+
+2. **Load in Chrome**:
+   - Open Chrome and navigate to `chrome://extensions/`
+   - Enable "Developer mode" in the top right
+   - Click "Load unpacked" and select the extracted folder
+   - The extension icon will appear in your toolbar
+
+The extension will be available on the Chrome Web Store (coming soon).
 
 ### For Development
 
@@ -41,20 +41,20 @@ npm run build
    - Click "Load unpacked" and select the `dist/poesearcher/` directory
    - The extension icon will appear in your toolbar
 
-### For Users
+## Features
 
-1. **Download from GitHub Releases**:
-   - Go to [Releases](https://github.com/milespop/poesearcher/releases)
-   - Download the latest `poesearcher.zip` file
-   - Extract the zip file to a folder
-
-2. **Load in Chrome**:
-   - Open Chrome and navigate to `chrome://extensions/`
-   - Enable "Developer mode" in the top right
-   - Click "Load unpacked" and select the extracted folder
-   - The extension icon will appear in your toolbar
-
-The extension will be available on the Chrome Web Store (coming soon).
+- **Automatic Item Parsing**: Paste POE2 item text to automatically extract stats and modifiers
+- **Smart Stat Mapping**: Maps 85+ item stats to their corresponding trade site filters
+- **Mutation Type Support**: Handles explicit, implicit, desecrated, fractured, and pseudo modifiers
+- **Value Scaling**: Scale down stat values (1-100%) for broader search results
+- **Selective Filtering**: Choose which stats to include in your search with checkboxes
+- **Speed Profiles**: Choose between Safe (recommended) and Lightning (extreme speed) search engine
+- **Colorblind Mode**: Modern toggle switch with alternative color scheme for better accessibility
+- **Modern UI**: Clean Material Design interface with custom search icon and visual input feedback
+- **Automatic Filter Selection**: Intelligently selects the correct filter variant from dropdowns
+- **Visual Input Feedback**: Input field changes color based on validation state (green/blue for valid, red/gray for errors)
+- **Clear Functionality**: Reset button to clear input and restore default scale settings
+- **Smart Status Display**: Status messages only appear during validation errors
 
 ## Usage
 
