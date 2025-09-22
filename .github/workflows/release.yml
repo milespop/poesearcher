@@ -12,6 +12,7 @@ permissions:
   contents: write
   pull-requests: write
   actions: read
+  packages: write
 
 jobs:
   release:
@@ -33,15 +34,16 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
-      - name: Create Release Pull Request or Publish to GitHub
+      - name: Create Release Pull Request
         id: changesets
         uses: changesets/action@v1
         with:
           # This expects you to have a script called version which runs `changeset version` and updates the `package.json` version
           version: npm run changeset:version
-          # Build extension but don't publish to npm - this is a Chrome extension
-          publish: echo "Skipping npm publish - this is a Chrome extension"
+          # We're not publishing to npm, just using changesets for versioning
+          publish: echo "Skipping npm publish - Chrome extension only"
           commit: "chore: release packages"
+          createGithubReleases: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -63,37 +65,65 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      # Check if this push was a merge of a changeset-release branch
+      - name: Check for Release
+        id: check_release
+        run: |
+          # Check if the most recent commit message contains "chore: release packages"
+          LAST_COMMIT_MSG=$(git log -1 --pretty=%B)
+          if [[ "$LAST_COMMIT_MSG" == *"chore: release packages"* ]]; then
+            echo "is_release=true" >> $GITHUB_OUTPUT
+            echo "This is a release commit"
+          else
+            echo "is_release=false" >> $GITHUB_OUTPUT
+            echo "This is not a release commit"
+          fi
+
       - name: Build Extension for Release
-        if: steps.changesets.outputs.published == 'true'
+        if: steps.check_release.outputs.is_release == 'true'
         run: npm run changeset:release
 
-      - name: Create Git Tag
-        if: steps.changesets.outputs.published == 'true'
+      - name: Get Version for Tag
+        if: steps.check_release.outputs.is_release == 'true'
+        id: get_version
         run: |
           VERSION=$(node -p "require('./package.json').version")
-          git tag "v$VERSION"
-          git push origin "v$VERSION"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Version: $VERSION"
+
+      - name: Create Git Tag
+        if: steps.check_release.outputs.is_release == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "v${{ steps.get_version.outputs.version }}" -m "Release v${{ steps.get_version.outputs.version }}"
+          git push origin "v${{ steps.get_version.outputs.version }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Get Changelog Entry
-        if: steps.changesets.outputs.published == 'true'
+        if: steps.check_release.outputs.is_release == 'true'
         id: changelog
         run: |
-          VERSION=$(node -p "require('./package.json').version")
+          VERSION=${{ steps.get_version.outputs.version }}
           # Extract changelog entry for current version
-          CHANGELOG_ENTRY=$(sed -n "/## $VERSION/,/## /p" CHANGELOG.md | sed '$d' | tail -n +2)
+          CHANGELOG_ENTRY=$(sed -n "/## $VERSION/,/## [0-9]/p" CHANGELOG.md | sed '$d' | tail -n +2)
+
+          # If no next version found, get everything after current version
+          if [ -z "$CHANGELOG_ENTRY" ]; then
+            CHANGELOG_ENTRY=$(sed -n "/## $VERSION/,\$p" CHANGELOG.md | tail -n +2)
+          fi
+
           echo "CHANGELOG_ENTRY<<EOF" >> $GITHUB_OUTPUT
           echo "$CHANGELOG_ENTRY" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
-          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Create GitHub Release
-        if: steps.changesets.outputs.published == 'true'
+        if: steps.check_release.outputs.is_release == 'true'
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: v${{ steps.changelog.outputs.VERSION }}
-          name: Release v${{ steps.changelog.outputs.VERSION }}
+          tag_name: v${{ steps.get_version.outputs.version }}
+          name: v${{ steps.get_version.outputs.version }}
           body: |
             ## Changes
 
@@ -101,16 +131,23 @@ jobs:
 
             ## Installation
 
-            Download the `poesearcher.zip` file and load it as an unpacked extension in Chrome:
-            1. Open Chrome and go to `chrome://extensions/`
-            2. Enable "Developer mode"
-            3. Click "Load unpacked"
-            4. Extract and select the extension folder
+            Download the `poesearcher.zip` file below and load it as an unpacked extension in Chrome:
 
-            The extension will be ready to use on Path of Exile trade pages.
+            1. Download `poesearcher.zip` from the assets below
+            2. Extract the zip file to a folder
+            3. Open Chrome and go to `chrome://extensions/`
+            4. Enable "Developer mode" in the top right
+            5. Click "Load unpacked" and select the extracted folder
+            6. The extension will be ready to use on [Path of Exile trade pages](https://www.pathofexile.com/trade2/search/poe2/)
+
+            ## Compatibility
+
+            - Chrome, Brave, Edge, and other Chromium-based browsers
+            - Path of Exile 2 trade website
           files: |
             poesearcher.zip
           draft: false
           prerelease: false
+          make_latest: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
