@@ -1,5 +1,16 @@
 # poesearcher
 
+## 0.2.3
+
+### Patch Changes
+
+- 5d74c6d: Test complete GitHub release workflow with automatic tags
+
+  - Verify automatic git tag creation after PR merge
+  - Test GitHub release creation with zip attachment
+  - Confirm release appears on GitHub releases page
+  - Validate changelog extraction in release notes
+
 ## 0.2.2
 
 ### Patch Changes
