@@ -1,0 +1,79 @@
+name: Upload Release Assets
+
+on:
+  release:
+    types: [published, created]
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Tag name for the release'
+        required: true
+        default: 'v0.2.5'
+
+permissions:
+  contents: write
+
+jobs:
+  upload-assets:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name || github.event.inputs.tag_name }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build extension
+        run: npm run package
+
+      - name: List files
+        run: |
+          echo "Files in root directory:"
+          ls -la
+          echo ""
+          echo "Checking for zip file:"
+          if [ -f "poesearcher.zip" ]; then
+            echo "✅ poesearcher.zip exists"
+            echo "File size: $(ls -lh poesearcher.zip | awk '{print $5}')"
+            echo "File info:"
+            file poesearcher.zip
+          else
+            echo "❌ poesearcher.zip not found!"
+          fi
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./poesearcher.zip
+          asset_name: poesearcher.zip
+          asset_content_type: application/zip
+        if: github.event_name == 'release'
+
+      - name: Upload to specific release (manual trigger)
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          TAG="${{ github.event.inputs.tag_name }}"
+          echo "Uploading to release $TAG"
+
+          # Delete existing asset if it exists
+          ASSET_ID=$(gh api /repos/${{ github.repository }}/releases/tags/$TAG --jq '.assets[] | select(.name=="poesearcher.zip") | .id' || true)
+          if [ ! -z "$ASSET_ID" ]; then
+            echo "Deleting existing asset ID: $ASSET_ID"
+            gh api -X DELETE /repos/${{ github.repository }}/releases/assets/$ASSET_ID
+          fi
+
+          # Upload new asset
+          gh release upload $TAG poesearcher.zip --clobber
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
