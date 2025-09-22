@@ -3,6 +3,7 @@
 
 import type { ParsedItem } from './itemParser';
 import { createLogger } from './logger';
+import { findItemCategoryInput, validateEntireSiteStructure } from './siteValidator';
 
 // Type definitions for search engine
 export interface SearchResult {
@@ -88,6 +89,16 @@ export async function performSearch(parsed: ParsedItem, scalePercent: number = 1
   logger.info(`Scale: ${scalePercent}%`);
 
   try {
+    // Step 0: Validate site structure before proceeding
+    logger.debug('Step 0: Validating site structure');
+    const structureValidation = await validateEntireSiteStructure();
+
+    if (!structureValidation.overallValid) {
+      return {
+        success: false,
+        error: `Site structure validation failed: ${structureValidation.criticalErrors.join(', ')}`
+      };
+    }
     // Step 1: Clear existing search
     logger.debug('Step 1: Clearing existing search');
     await clearSearchForm();
@@ -159,36 +170,54 @@ async function setItemType(parsed: ParsedItem): Promise<void> {
   // Find the category dropdown
   const categoryDropdown = document.querySelector<HTMLSelectElement>('select[data-field="category"]');
   if (!categoryDropdown) {
-    logger.verbose('Standard dropdown not found, looking for multiselect...');
+    logger.verbose('Standard dropdown not found, looking for Item Category multiselect...');
 
-    const multiselectInput = document.querySelector<HTMLInputElement>('.multiselect input[placeholder*="Any"]');
+    // Use precise selector to find Item Category input specifically
+    const multiselectInput = findItemCategoryInput();
     if (!multiselectInput) {
-      throw new Error('Category selection not found');
+      throw new Error('Item Category selection not found - site structure may have changed');
     }
 
-    logger.verbose(`Found category dropdown with placeholder: "${multiselectInput.placeholder}"`);
+    // Validate this is actually the Item Category input
+    const parentFilter = multiselectInput.closest('.filter');
+    const filterTitle = parentFilter?.querySelector('.filter-title')?.textContent?.trim();
+    logger.verbose(`Found Item Category dropdown with placeholder: "${multiselectInput.placeholder}"`);
+    logger.verbose(`Parent filter title: "${filterTitle}"`);
+
+    // Ensure we're not targeting the search field
+    const searchField = document.querySelector('.search-select input');
+    if (multiselectInput === searchField) {
+      throw new Error('ERROR: Targeting search field instead of Item Category dropdown!');
+    }
+    logger.verbose('✓ Confirmed we are NOT targeting the search field');
 
     // Type the category name to filter options
+    logger.verbose(`Focusing and typing category: "${categoryName}"`);
     multiselectInput.focus();
     multiselectInput.value = categoryName;
     multiselectInput.dispatchEvent(new Event('input', { bubbles: true }));
 
     await new Promise(resolve => setTimeout(resolve, DELAYS.setItemType));
 
-    logger.verbose(`Typing category: "${categoryName}"`);
-
     // Wait for dropdown to appear and find exact match
     await new Promise(resolve => setTimeout(resolve, DELAYS.setItemType));
 
-    // Find the exact option by text content
-    const dropdownOptions = document.querySelectorAll('.multiselect__option');
-    let exactOption: Element | null = null;
+    // Find the specific dropdown options for this multiselect
+    const categoryFilter = multiselectInput.closest('.filter');
+    const categoryDropdownOptions = categoryFilter?.querySelectorAll('.multiselect__option') || [];
 
-    for (const option of dropdownOptions) {
+    logger.verbose(`Found ${categoryDropdownOptions.length} options in Item Category dropdown`);
+
+    // Log all available options for debugging
+    const availableOptions = Array.from(categoryDropdownOptions).map(opt => opt.textContent?.trim()).filter(Boolean);
+    logger.verbose(`Available category options: [${availableOptions.join(', ')}]`);
+
+    let exactOption: Element | null = null;
+    for (const option of categoryDropdownOptions) {
       const optionText = option.textContent?.trim();
       if (optionText === categoryName) {
         exactOption = option;
-        logger.verbose(`Found exact match for "${categoryName}"`);
+        logger.verbose(`Found exact match for "${categoryName}" in Item Category dropdown`);
         break;
       }
     }
@@ -199,7 +228,9 @@ async function setItemType(parsed: ParsedItem): Promise<void> {
       logger.verbose(`Clicked exact option: "${categoryName}"`);
     } else {
       // Fallback to Enter key if exact option not found
-      logger.warn(`Exact option not found for "${categoryName}", using Enter key fallback`);
+      logger.warn(`Exact option not found for "${categoryName}" in available options: [${availableOptions.join(', ')}]`);
+      logger.warn('Using Enter key fallback');
+
       const enterEvent = new KeyboardEvent('keydown', {
         key: 'Enter',
         code: 'Enter',
@@ -213,7 +244,22 @@ async function setItemType(parsed: ParsedItem): Promise<void> {
     }
 
     await new Promise(resolve => setTimeout(resolve, DELAYS.setItemType));
-    logger.debug(`Item category set to: "${categoryName}"`);
+
+    // Verify the selection was successful
+    const selectedValue = multiselectInput.value;
+    const isSearchField = multiselectInput === document.querySelector('.search-select input');
+
+    logger.debug(`After category selection:`);
+    logger.debug(`  - Selected value: "${selectedValue}"`);
+    logger.debug(`  - Is search field: ${isSearchField}`);
+    logger.debug(`  - Target category: "${categoryName}"`);
+
+    if (isSearchField) {
+      logger.error('CRITICAL ERROR: Text was entered into search field instead of Item Category!');
+      throw new Error('Category selection failed - text entered into search field');
+    }
+
+    logger.success(`✓ Item category successfully set to: "${categoryName}"`);
 
   } else {
     // Use standard dropdown

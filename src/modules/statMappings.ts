@@ -23,8 +23,64 @@ export type ItemClass =
   | 'Daggers' | 'Claws' | 'Sceptres' | 'Two Hand Swords' | 'Two Hand Axes'
   | 'Two Hand Maces' | 'Quarterstaves' | 'Spears' | 'Flails';
 
+// Type to enforce unique keys in stat mappings - TypeScript will error if duplicate keys exist
+type EnsureUniqueKeys<T> = {
+  [K in keyof T]: T[K]
+}
+
+// Type that enforces no duplicate keys by creating a constraint that fails on duplicates
+type StatMappingsWithUniqueKeys = EnsureUniqueKeys<Record<string, StatMapping>>
+
 const POE_STAT_MAPPINGS = {
   mappings: {
+    // === PRESENCE PATTERNS (MUST BE FIRST FOR PRIORITY) ===
+    'Allies in your Presence have # to Accuracy Rating': {
+      filterText: 'Allies in your Presence have # to Accuracy Rating',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/Allies in your Presence have \+?(\d+)\s+to Accuracy Rating/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    'Allies in your Presence have #% increased Attack Speed': {
+      filterText: 'Allies in your Presence have #% increased Attack Speed',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/Allies in your Presence have (\d+)%\s+increased Attack Speed/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+
+    // === AREA OF EFFECT PATTERNS ===
+    '#% increased Area of Effect for Attacks per 10 Intelligence': {
+      filterText: '#% increased Area of Effect for Attacks per 10 Intelligence',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)%\s+increased Area of Effect for Attacks per 10 Intelligence/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    '#% increased Area of Effect of Curses': {
+      filterText: '#% increased Area of Effect of Curses',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)%\s+increased Area of Effect of Curses/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    '#% increased Area of Effect': {
+      filterText: '#% increased Area of Effect',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        // Only match generic AoE if it doesn't have specific modifiers
+        if (statText.includes('for Attacks per') || statText.includes('of Curses')) {
+          return null;
+        }
+        const match = statText.match(/(\d+)%\s+increased Area of Effect/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+
     // === PSEUDO STATS ===
     'to maximum Life': {
       filterText: '# to maximum Life',
@@ -70,6 +126,10 @@ const POE_STAT_MAPPINGS = {
       filterText: '#% to all Elemental Resistances',
       group: 'explicit' as const,
       extractValue: (statText: string): number | null => {
+        // Don't match presence-specific or minion-specific patterns
+        if (statText.includes('Allies in your Presence') || statText.includes('Minions have')) {
+          return null;
+        }
         const match = statText.match(/\+?(\d+)%\s+to all Elemental Resistances/);
         return match ? parseInt(match[1]) : null;
       }
@@ -86,6 +146,10 @@ const POE_STAT_MAPPINGS = {
       filterText: '+#% total to Fire Resistance',
       group: 'pseudo' as const,
       extractValue: (statText: string): number | null => {
+        // Don't match presence-specific patterns
+        if (statText.includes('Enemies in your Presence')) {
+          return null;
+        }
         const match = statText.match(/\+?(\d+)%\s+to Fire Resistance/);
         return match ? parseInt(match[1]) : null;
       }
@@ -102,6 +166,10 @@ const POE_STAT_MAPPINGS = {
       filterText: '+#% total to Chaos Resistance',
       group: 'pseudo' as const,
       extractValue: (statText: string): number | null => {
+        // Don't match minion-specific patterns
+        if (statText.includes('Minions have')) {
+          return null;
+        }
         const match = statText.match(/\+?(\d+)%\s+to Chaos Resistance/);
         return match ? parseInt(match[1]) : null;
       }
@@ -146,6 +214,10 @@ const POE_STAT_MAPPINGS = {
       filterText: '#% to Fire Resistance',
       group: 'explicit' as const,
       extractValue: (statText: string): number | null => {
+        // Don't match presence-specific patterns
+        if (statText.includes('Enemies in your Presence')) {
+          return null;
+        }
         const match = statText.match(/\+?(\d+)%\s+to Fire Resistance/);
         return match ? parseInt(match[1]) : null;
       }
@@ -218,6 +290,10 @@ const POE_STAT_MAPPINGS = {
       filterText: '#% increased maximum Life',
       group: 'explicit' as const,
       extractValue: (statText: string): number | null => {
+        // Don't match minion-specific patterns
+        if (statText.includes('Minions have')) {
+          return null;
+        }
         const match = statText.match(/(\d+)%\s+increased maximum Life/);
         return match ? parseInt(match[1]) : null;
       }
@@ -242,6 +318,10 @@ const POE_STAT_MAPPINGS = {
       filterText: '#% increased Cast Speed',
       group: 'explicit' as const,
       extractValue: (statText: string): number | null => {
+        // Don't match presence-specific patterns
+        if (statText.includes('Allies in your Presence')) {
+          return null;
+        }
         const match = statText.match(/(\d+)%\s+increased Cast Speed/);
         return match ? parseInt(match[1]) : null;
       }
@@ -376,6 +456,14 @@ const POE_STAT_MAPPINGS = {
         return match ? Math.floor((parseInt(match[1]) + parseInt(match[2])) / 2) : null;
       }
     },
+    'Adds # to # Lightning Damage to Attacks per 20 Intelligence': {
+      filterText: 'Adds # to # Lightning Damage to Attacks per 20 Intelligence',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/Adds (\d+) to (\d+) Lightning Damage to Attacks per 20 Intelligence/);
+        return match ? Math.floor((parseInt(match[1]) + parseInt(match[2])) / 2) : null;
+      }
+    },
     'Adds # to # Lightning damage to Attacks': {
       filterText: 'Adds # to # Lightning damage to Attacks',
       group: 'explicit' as const,
@@ -471,11 +559,27 @@ const POE_STAT_MAPPINGS = {
       filterText: '#% increased Critical Hit Chance',
       group: 'explicit' as const,
       extractValue: (statText: string): number | null => {
-        // Only match if it doesn't have "for Attacks" or "for Spells" after
-        if (statText.includes('for Attacks') || statText.includes('for Spells')) {
+        // Only match if it doesn't have "for Attacks", "for Spells", presence, or minions
+        if (statText.includes('for Attacks') || statText.includes('for Spells') || statText.includes('Allies in your Presence') || statText.includes('Minions have')) {
           return null;
         }
         const match = statText.match(/(\d+)%\s+increased Critical Hit Chance/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    '% increased Critical Damage Bonus with Spears': {
+      filterText: '#% increased Critical Damage Bonus with Spears',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)%\s+increased Critical Damage Bonus with Spears/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    '% increased Critical Damage Bonus for Attack Damage': {
+      filterText: '#% increased Critical Damage Bonus for Attack Damage',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)%\s+increased Critical Damage Bonus for Attack Damage/);
         return match ? parseInt(match[1]) : null;
       }
     },
@@ -483,8 +587,8 @@ const POE_STAT_MAPPINGS = {
       filterText: '#% increased Critical Damage Bonus',
       group: 'explicit' as const,
       extractValue: (statText: string): number | null => {
-        // Only match if it doesn't have "for Attack Damage" or other specific versions after
-        if (statText.includes('for Attack Damage')) {
+        // Only match if it doesn't have specific versions, presence, or minions
+        if (statText.includes('for Attack Damage') || statText.includes('with Spears') || statText.includes('Allies in your Presence') || statText.includes('Minions have')) {
           return null;
         }
         const match = statText.match(/(\d+)%\s+increased Critical Damage Bonus/);
@@ -507,26 +611,14 @@ const POE_STAT_MAPPINGS = {
         return match ? parseInt(match[1]) : null;
       }
     },
-    '% increased Attack Speed': {
-      filterText: '#% increased Attack Speed',
-      group: 'explicit' as const,
-      extractValue: (statText: string): number | null => {
-        const match = statText.match(/(\d+)%\s+increased Attack Speed/);
-        return match ? parseInt(match[1]) : null;
-      }
-    },
-    '% increased Attack Speed (Local)': {
-      filterText: '#% increased Attack Speed (Local)',
-      group: 'explicit' as const,
-      extractValue: (statText: string): number | null => {
-        const match = statText.match(/(\d+)%\s+increased Attack Speed/);
-        return match ? parseInt(match[1]) : null;
-      }
-    },
     'to Accuracy Rating (Local)': {
       filterText: '# to Accuracy Rating (Local)',
       group: 'explicit' as const,
       extractValue: (statText: string): number | null => {
+        // Don't match presence-specific patterns
+        if (statText.includes('Allies in your Presence') || statText.includes('Enemies in your Presence')) {
+          return null;
+        }
         const match = statText.match(/\+?(\d+)\s+to Accuracy Rating/);
         return match ? parseInt(match[1]) : null;
       }
@@ -543,7 +635,83 @@ const POE_STAT_MAPPINGS = {
       filterText: '#% increased Attack and Cast Speed',
       group: 'explicit' as const,
       extractValue: (statText: string): number | null => {
+        // Don't match minion-specific patterns
+        if (statText.includes('Minions have')) {
+          return null;
+        }
         const match = statText.match(/(\d+)%\s+increased Attack and Cast Speed/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    '% increased Attack Speed per 10 Dexterity': {
+      filterText: '#% increased Attack Speed per 10 Dexterity',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)%\s+increased Attack Speed per 10 Dexterity/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    '% increased Attack Speed per 20 Dexterity': {
+      filterText: '#% increased Attack Speed per 20 Dexterity',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)%\s+increased Attack Speed per 20 Dexterity/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    '% increased Attack Speed with Bows': {
+      filterText: '#% increased Attack Speed with Bows',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)%\s+increased Attack Speed with Bows/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    '% increased Attack Speed with Crossbows': {
+      filterText: '#% increased Attack Speed with Crossbows',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)%\s+increased Attack Speed with Crossbows/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    '% increased Attack Speed with Quarterstaves': {
+      filterText: '#% increased Attack Speed with Quarterstaves',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)%\s+increased Attack Speed with Quarterstaves/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    '% increased Attack Speed with Spears': {
+      filterText: '#% increased Attack Speed with Spears',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)%\s+increased Attack Speed with Spears/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    '% increased Attack Speed (Local)': {
+      filterText: '#% increased Attack Speed (Local)',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        // Don't match presence-specific patterns
+        if (statText.includes('Allies in your Presence') || statText.includes('Enemies in your Presence')) {
+          return null;
+        }
+        const match = statText.match(/(\d+)%\s+increased Attack Speed/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    '% increased Attack Speed': {
+      filterText: '#% increased Attack Speed',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        // Only match if it doesn't have specific weapon/scaling modifiers
+        if (statText.includes('per ') || statText.includes('with ')) {
+          return null;
+        }
+        const match = statText.match(/(\d+)%\s+increased Attack Speed$/);
         return match ? parseInt(match[1]) : null;
       }
     },
@@ -563,11 +731,11 @@ const POE_STAT_MAPPINGS = {
         return match ? parseInt(match[1]) : null;
       }
     },
-    '% increased Critical Damage Bonus for Attack Damage': {
-      filterText: '#% increased Critical Damage Bonus for Attack Damage',
+    '% increased Critical Spell Damage Bonus': {
+      filterText: '#% increased Critical Spell Damage Bonus',
       group: 'explicit' as const,
       extractValue: (statText: string): number | null => {
-        const match = statText.match(/(\d+)%\s+increased Critical Damage Bonus for Attack Damage/);
+        const match = statText.match(/(\d+)%\s+increased Critical Spell Damage Bonus/);
         return match ? parseInt(match[1]) : null;
       }
     },
@@ -586,14 +754,6 @@ const POE_STAT_MAPPINGS = {
       group: 'explicit' as const,
       extractValue: (statText: string): number | null => {
         const match = statText.match(/\+?(\d+)\s+to Evasion Rating$/);
-        return match ? parseInt(match[1]) : null;
-      }
-    },
-    '% increased Armour': {
-      filterText: '#% increased Armour',
-      group: 'explicit' as const,
-      extractValue: (statText: string): number | null => {
-        const match = statText.match(/(\d+)%\s+increased Armour/);
         return match ? parseInt(match[1]) : null;
       }
     },
@@ -618,14 +778,6 @@ const POE_STAT_MAPPINGS = {
       group: 'explicit' as const,
       extractValue: (statText: string): number | null => {
         const match = statText.match(/\+?(\d+)\s+to Evasion Rating/);
-        return match ? parseInt(match[1]) : null;
-      }
-    },
-    '% increased Armour (Local)': {
-      filterText: '#% increased Armour (Local)',
-      group: 'explicit' as const,
-      extractValue: (statText: string): number | null => {
-        const match = statText.match(/(\d+)%\s+increased Armour/);
         return match ? parseInt(match[1]) : null;
       }
     },
@@ -669,11 +821,131 @@ const POE_STAT_MAPPINGS = {
         return match ? parseInt(match[1]) : null;
       }
     },
+    '% increased Evasion and Energy Shield': {
+      filterText: '#% increased Evasion and Energy Shield',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)%\s+increased Evasion and Energy Shield/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    '% increased Armour, Evasion and Energy Shield': {
+      filterText: '#% increased Armour, Evasion and Energy Shield',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)%\s+increased Armour, Evasion and Energy Shield/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    '% increased Armour (Local)': {
+      filterText: '#% increased Armour (Local)',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)%\s+increased Armour/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    '% increased Armour': {
+      filterText: '#% increased Armour',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        // Only match if it doesn't have other defense types with it
+        if (statText.includes('and ') || statText.includes(', ')) {
+          return null;
+        }
+        const match = statText.match(/(\d+)%\s+increased Armour$/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    '% increased Global Defences': {
+      filterText: '#% increased Global Defences',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)%\s+increased Global Defences/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    '% increased Defences from Equipped Shield': {
+      filterText: '#% increased Defences from Equipped Shield',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)%\s+increased Defences from Equipped Shield/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
     ' to Stun Threshold': {
       filterText: '# to Stun Threshold',
       group: 'explicit' as const,
       extractValue: (statText: string): number | null => {
         const match = statText.match(/\+?(\d+)\s+to Stun Threshold/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    '% increased Accuracy Rating': {
+      filterText: '#% increased Accuracy Rating',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        // Only match generic accuracy rating without weapon specifics
+        if (statText.includes('with ')) {
+          return null;
+        }
+        const match = statText.match(/(\d+)%\s+increased Accuracy Rating/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    '% increased Accuracy Rating with Bows': {
+      filterText: '#% increased Accuracy Rating with Bows',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)%\s+increased Accuracy Rating with Bows/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    '% increased Stun Threshold': {
+      filterText: '#% increased Stun Threshold',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        // Only match generic stun threshold without conditionals
+        if (statText.includes('if you haven\'t been Stunned Recently')) {
+          return null;
+        }
+        const match = statText.match(/(\d+)%\s+increased Stun Threshold/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    '% increased Stun Duration': {
+      filterText: '#% increased Stun Duration',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)%\s+increased Stun Duration/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    '% increased Stun Buildup': {
+      filterText: '#% increased Stun Buildup',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        // Only match generic stun buildup without weapon specifics
+        if (statText.includes('with ')) {
+          return null;
+        }
+        const match = statText.match(/(\d+)%\s+increased Stun Buildup/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    '% increased Stun Buildup with Maces': {
+      filterText: '#% increased Stun Buildup with Maces',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)%\s+increased Stun Buildup with Maces/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    '% increased Stun Threshold if you haven\'t been Stunned Recently': {
+      filterText: '#% increased Stun Threshold if you haven\'t been Stunned Recently',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)%\s+increased Stun Threshold if you haven't been Stunned Recently/);
         return match ? parseInt(match[1]) : null;
       }
     },
@@ -683,6 +955,129 @@ const POE_STAT_MAPPINGS = {
       extractValue: (statText: string): number | null => {
         const match = statText.match(/\+?(\d+)%\s+of Armour also applies to Elemental Damage/);
         return match ? parseInt(match[1]) : null;
+      }
+    },
+
+    // === PRESENCE/AURA EFFECTS ===
+    '#% increased Presence Area of Effect': {
+      filterText: '#% increased Presence Area of Effect',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)%\s+increased Presence Area of Effect/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    'Allies in your Presence deal #% increased Damage': {
+      filterText: 'Allies in your Presence deal #% increased Damage',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/Allies in your Presence deal (\d+)%\s+increased Damage/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    'Allies in your Presence Regenerate # Life per second': {
+      filterText: 'Allies in your Presence Regenerate # Life per second',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/Allies in your Presence Regenerate (\d+)\s+Life per second/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    'Allies in your Presence have #% increased Cast Speed': {
+      filterText: 'Allies in your Presence have #% increased Cast Speed',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/Allies in your Presence have (\d+)%\s+increased Cast Speed/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    'Allies in your Presence have #% increased Critical Hit Chance': {
+      filterText: 'Allies in your Presence have #% increased Critical Hit Chance',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/Allies in your Presence have (\d+)%\s+increased Critical Hit Chance/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    'Allies in your Presence have #% increased Critical Damage Bonus': {
+      filterText: 'Allies in your Presence have #% increased Critical Damage Bonus',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/Allies in your Presence have (\d+)%\s+increased Critical Damage Bonus/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    'Allies in your Presence have #% to all Elemental Resistances': {
+      filterText: 'Allies in your Presence have #% to all Elemental Resistances',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/Allies in your Presence have \+?(\d+)%\s+to all Elemental Resistances/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    'Allies in your Presence deal # to # added Attack Cold Damage': {
+      filterText: 'Allies in your Presence deal # to # added Attack Cold Damage',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/Allies in your Presence deal (\d+)\s+to \d+\s+added Attack Cold Damage/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    'Allies in your Presence deal # to # added Attack Fire Damage': {
+      filterText: 'Allies in your Presence deal # to # added Attack Fire Damage',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/Allies in your Presence deal (\d+)\s+to \d+\s+added Attack Fire Damage/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    'Allies in your Presence deal # to # added Attack Lightning Damage': {
+      filterText: 'Allies in your Presence deal # to # added Attack Lightning Damage',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/Allies in your Presence deal (\d+)\s+to \d+\s+added Attack Lightning Damage/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    'Allies in your Presence deal # to # added Attack Physical Damage': {
+      filterText: 'Allies in your Presence deal # to # added Attack Physical Damage',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/Allies in your Presence deal (\d+)\s+to \d+\s+added Attack Physical Damage/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    'Enemies in your Presence are Ignited as though dealt # Base Fire Damage': {
+      filterText: 'Enemies in your Presence are Ignited as though dealt # Base Fire Damage',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/Enemies in your Presence are Ignited as though dealt (\d+)\s+Base Fire Damage/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    'Enemies in your Presence have #% to Fire Resistance': {
+      filterText: 'Enemies in your Presence have #% to Fire Resistance',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/Enemies in your Presence have ([-+]?\d+)%\s+to Fire Resistance/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    '#% of your Base Life Regeneration is granted to Allies in your Presence': {
+      filterText: '#% of your Base Life Regeneration is granted to Allies in your Presence',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)%\s+of your Base Life Regeneration is granted to Allies in your Presence/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    'Share Charges with Allies in your Presence': {
+      filterText: 'Share Charges with Allies in your Presence',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        // This is a boolean stat, but we'll return 1 if it matches
+        const match = statText.match(/Share Charges with Allies in your Presence/);
+        return match ? 1 : null;
       }
     },
 
@@ -928,8 +1323,98 @@ const POE_STAT_MAPPINGS = {
         const match = statText.match(/(\d+)% of Maximum Life Converted to Energy Shield/);
         return match ? parseInt(match[1]) : null;
       }
+    },
+
+    // === MINION STATS ===
+    'Minions deal % increased Damage': {
+      filterText: 'Minions deal #% increased Damage',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/Minions deal (\d+)%\s+increased Damage/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    'Minions have % increased maximum Life': {
+      filterText: 'Minions have #% increased maximum Life',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/Minions have\s+(\d+)%\s+increased maximum Life/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    'Minions have % increased Attack and Cast Speed': {
+      filterText: 'Minions have #% increased Attack and Cast Speed',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/Minions have (\d+)%\s+increased Attack and Cast Speed/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    'Minions have % to all Elemental Resistances': {
+      filterText: 'Minions have #% to all Elemental Resistances',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/Minions have \+?(\d+)%\s+to all Elemental Resistances/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    'Minions have % additional Physical Damage Reduction': {
+      filterText: 'Minions have #% additional Physical Damage Reduction',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/Minions have (\d+)%\s+additional Physical Damage Reduction/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    'Minions have % increased Critical Damage Bonus': {
+      filterText: 'Minions have #% increased Critical Damage Bonus',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/Minions have (\d+)%\s+increased Critical Damage Bonus/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    'Minions have % increased Critical Hit Chance': {
+      filterText: 'Minions have #% increased Critical Hit Chance',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/Minions have (\d+)%\s+increased Critical Hit Chance/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    '% increased Minion Accuracy Rating': {
+      filterText: '#% increased Minion Accuracy Rating',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)%\s+increased Minion Accuracy Rating/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    'Minions have % to Chaos Resistance': {
+      filterText: 'Minions have #% to Chaos Resistance',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/Minions have \+?(\d+)%\s+to Chaos Resistance/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    'Minions gain % of their maximum Life as Extra maximum Energy Shield': {
+      filterText: 'Minions gain #% of their maximum Life as Extra maximum Energy Shield',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/Minions gain (\d+)%\s+of their maximum Life as Extra maximum Energy Shield/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    'Minions Revive % faster': {
+      filterText: 'Minions Revive #% faster',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/Minions Revive (\d+)%\s+faster/);
+        return match ? parseInt(match[1]) : null;
+      }
     }
-  } as const satisfies Record<string, StatMapping>
+  } as const satisfies StatMappingsWithUniqueKeys
 } as const;
 
 // Define weapon categories for Attack Speed (Local) and Accuracy Rating (Local) priority
@@ -948,7 +1433,8 @@ export function findStatMapping(statText: string, itemClass: string | null = nul
   const isShield = itemClass === SHIELD_CATEGORY;
 
   // For weapons, prioritize local versions of Attack Speed and Accuracy Rating
-  if (isWeapon) {
+  // BUT exclude presence-specific patterns which should never be local
+  if (isWeapon && !statText.includes('Allies in your Presence') && !statText.includes('Enemies in your Presence')) {
     if (statText.includes('increased Attack Speed')) {
       // Try Attack Speed (Local) first for weapons
       const localMapping = POE_STAT_MAPPINGS.mappings['% increased Attack Speed (Local)'];

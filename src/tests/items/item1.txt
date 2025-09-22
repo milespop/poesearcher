@@ -1,0 +1,14 @@
+Item Class: Rings
+Rarity: Rare
+Demon Eye
+Topaz Ring
+--------
+Requires: Level 59
+--------
+Item Level: 78
+--------
++28% to Lightning Resistance (implicit)
+--------
++102 to maximum Life
++32 to Strength
++36% to Lightning Resistance

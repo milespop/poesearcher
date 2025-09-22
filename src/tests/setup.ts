@@ -2,7 +2,7 @@
 import { vi } from 'vitest';
 
 // Mock chrome API if needed
-global.chrome = {
+(globalThis as any).chrome = {
   runtime: {
     sendMessage: vi.fn(),
     onMessage: {
