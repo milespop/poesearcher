@@ -74,7 +74,7 @@ git push origin feature/your-feature-name
 While we don't have automated tests yet, please manually test:
 - Extension loads without console errors
 - Item parsing works with various POE items
-- Search automation functions correctly
+- Search engine functions correctly
 - UI responds appropriately
 
 ## Reporting Issues

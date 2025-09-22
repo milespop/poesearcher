@@ -9,7 +9,7 @@ A modern TypeScript Chrome extension that automates item searching on the Path o
 - **Mutation Type Support**: Handles explicit, implicit, desecrated, fractured, and pseudo modifiers
 - **Value Scaling**: Scale down stat values (1-100%) for broader search results
 - **Selective Filtering**: Choose which stats to include in your search with checkboxes
-- **Speed Profiles**: Choose between Safe (recommended) and Lightning (extreme speed) automation
+- **Speed Profiles**: Choose between Safe (recommended) and Lightning (extreme speed) search engine
 - **Colorblind Mode**: Modern toggle switch with alternative color scheme for better accessibility
 - **Modern UI**: Clean Material Design interface with custom search icon and visual input feedback
 - **Automatic Filter Selection**: Intelligently selects the correct filter variant from dropdowns
@@ -79,7 +79,7 @@ src/
 ├── modules/              # Core TypeScript modules
 │   ├── statMappings.ts   # Stat-to-filter mapping definitions
 │   ├── itemParser.ts     # Item text parsing and validation
-│   ├── automation.ts     # Trade site automation with configurable delays
+│   ├── search-engine.ts  # Trade site search engine with configurable delays
 │   └── interface_clean.ts # Modern UI components and interactions
 ├── icons/                # Custom search icons
 └── public/               # Static assets (copied to dist/)
@@ -171,8 +171,8 @@ const STAT_MAPPINGS: Record<string, StatMapping> = {
 - More specific patterns are placed before generic ones
 - Example: "increased Elemental Damage with Attacks" before "increased Elemental Damage"
 
-#### 3. Automation Engine (`automation.ts`)
-Advanced TypeScript automation system with configurable performance profiles.
+#### 3. Search Engine (`search-engine.ts`)
+Advanced TypeScript search engine system with configurable performance profiles.
 
 **Speed Profiles:**
 ```typescript
@@ -217,7 +217,7 @@ Material Design-inspired interface with full TypeScript typing and modern UX pat
 **Key Features:**
 - **Custom Search Icon**: Floating action button with custom search icon and magnifying glass overlay
 - **Modern Settings Panel**: Toggle switches and dropdowns with consistent styling
-- **Speed Profile Selection**: Real-time switching between automation speeds
+- **Speed Profile Selection**: Real-time switching between search engine speeds
 - **Scale Slider**: Reduces all stat values proportionally
   - Formula: `scaledValue = Math.floor(originalValue * scale / 100)`
   - Prevents values from going below 1

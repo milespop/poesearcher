@@ -21,7 +21,7 @@
       "js": [
         "modules/statMappings.js",
         "modules/itemParser.js",
-        "modules/automation.js",
+        "modules/search-engine.js",
         "modules/interface_clean.js",
         "content.js"
       ],
