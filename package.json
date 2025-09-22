@@ -1,8 +1,9 @@
 {
   "name": "poesearcher",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "A Chrome extension that automates item searching on the Path of Exile trade website by parsing item text and automatically filling in search filters.",
   "devDependencies": {
+    "@changesets/cli": "^2.29.7",
     "@crxjs/vite-plugin": "^2.2.0",
     "@types/chrome": "^0.1.12",
     "bestzip": "^2.2.1",
@@ -22,6 +23,9 @@
     "postinstall": "npm run build",
     "zip": "bestzip poesearcher.zip dist/poesearcher/*",
     "package": "npm run build && npm run zip",
+    "changeset": "changeset",
+    "changeset:version": "changeset version && npm run sync-version",
+    "changeset:release": "npm run package",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
