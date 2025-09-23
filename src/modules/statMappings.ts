@@ -349,8 +349,8 @@ const POE_STAT_MAPPINGS = {
       filterText: '#% increased Energy Shield',
       group: 'explicit' as const,
       extractValue: (statText: string): number | null => {
-        // Don't match "increased Energy Shield Recharge Rate" - that has its own pattern
-        if (statText.includes('Recharge Rate')) {
+        // Don't match patterns that have their own specific mappings
+        if (statText.includes('Recharge Rate') || statText.includes('from Equipped') || statText.includes('from Focus')) {
           return null;
         }
         const match = statText.match(/(\d+)%\s+increased Energy Shield/);
@@ -1037,7 +1037,7 @@ const POE_STAT_MAPPINGS = {
       filterText: '#% increased Defences from Equipped Shield',
       group: 'explicit' as const,
       extractValue: (statText: string): number | null => {
-        const match = statText.match(/(\d+)%\s+increased Defences from Equipped Shield/);
+        const match = statText.match(/(\d+)%\s+increased\s+Defences\s+from\s+Equipped\s+Shield/);
         return match ? parseInt(match[1]) : null;
       }
     },
@@ -1246,6 +1246,14 @@ const POE_STAT_MAPPINGS = {
         // This is a boolean stat, but we'll return 1 if it matches
         const match = statText.match(/Share Charges with Allies in your Presence/);
         return match ? 1 : null;
+      }
+    },
+    'When a Party Member in your Presence Casts a Spell, you Sacrifice % of Mana and they Leech that Mana': {
+      filterText: 'When a Party Member in your Presence Casts a Spell, you Sacrifice #% of Mana and they Leech that Mana',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/When a Party Member in your Presence Casts a Spell, you Sacrifice (\d+)%\s+of Mana and they Leech that Mana/);
+        return match ? parseInt(match[1]) : null;
       }
     },
 
@@ -1746,6 +1754,14 @@ const POE_STAT_MAPPINGS = {
         return match ? parseInt(match[1]) : null;
       }
     },
+    'Gain % of Damage as Chaos Damage per Undead Minion': {
+      filterText: 'Gain #% of Damage as Chaos Damage per Undead Minion',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/Gain\s+(\d+)%\s+of\s+Damage\s+as\s+Chaos\s+Damage\s+per\s+Undead\s+Minion/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
 
     // === LIFE/MANA CONVERSION STATS ===
     'of Damage is taken from Mana before Life': {
@@ -2026,6 +2042,40 @@ const POE_STAT_MAPPINGS = {
       group: 'explicit' as const,
       extractValue: (statText: string): number | null => {
         const match = statText.match(/(\d+)%\s+increased\s+Totem\s+Placement\s+speed/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+
+    // ===== EQUIPPED ITEM BONUSES ===== //
+    '% increased Energy Shield from Equipped Focus': {
+      filterText: '#% increased Energy Shield from Equipped Focus',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)%\s+increased\s+Energy\s+Shield\s+from\s+Equipped\s+Focus/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    '% increased bonuses gained from Equipped Quiver': {
+      filterText: '#% increased bonuses gained from Equipped Quiver',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)%\s+increased\s+bonuses\s+gained\s+from\s+Equipped\s+Quiver/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    '% increased bonuses gained from left Equipped Ring': {
+      filterText: '#% increased bonuses gained from left Equipped Ring',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)%\s+increased\s+bonuses\s+gained\s+from\s+left\s+Equipped\s+Ring/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    '% increased bonuses gained from right Equipped Ring': {
+      filterText: '#% increased bonuses gained from right Equipped Ring',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)%\s+increased\s+bonuses\s+gained\s+from\s+right\s+Equipped\s+Ring/);
         return match ? parseInt(match[1]) : null;
       }
     }

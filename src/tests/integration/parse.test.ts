@@ -14,6 +14,7 @@ describe('Integration Tests - Real Game Items', () => {
       'amulet-stats.txt',
       'boots-nostack.txt',
       'es-chest-corrupted.txt',
+      'focus-item.txt',
       'qs1.txt',
       'ring-duallightning.txt',
       'spear-throw.txt',
@@ -244,6 +245,40 @@ describe('Integration Tests - Real Game Items', () => {
       // We expect at least 70% of stats to be mapped
       const mappingRatio = mappedStats / totalStats;
       expect(mappingRatio).toBeGreaterThan(0.7);
+    });
+  });
+
+  describe('Focus item support', () => {
+    it('should parse Focus items correctly and resolve the Foci class bug', () => {
+      const parsed = parseItem(itemTexts['focus-item.txt']);
+
+      expect(parsed.itemClass).toBe('Foci');
+      expect(parsed.rarity).toBe('Rare');
+      expect(parsed.name).toBe('Mind Anthem');
+      expect(parsed.baseType).toBe('Druidic Focus');
+
+      // Verify all Focus item stats can be mapped
+      const allStats = [...parsed.implicitStats, ...parsed.stats];
+      const unmappedStats: string[] = [];
+
+      allStats.forEach(stat => {
+        const mapping = findStatMapping(stat);
+        if (!mapping) {
+          unmappedStats.push(stat);
+        }
+      });
+
+      // Log unmapped stats for debugging
+      if (unmappedStats.length > 0) {
+        console.log('Unmapped stats in focus-item:', unmappedStats);
+      }
+
+      // Verify the bug fix: "Unknown item class: Foci" should no longer occur
+      // This is implicitly tested by the successful parsing above
+      expect(parsed.itemClass).toBe('Foci');
+
+      // All Focus stats should be mappable (this is a high-value item with standard stats)
+      expect(unmappedStats.length).toBe(0);
     });
   });
 

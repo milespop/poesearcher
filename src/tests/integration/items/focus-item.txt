@@ -1,0 +1,16 @@
+Item Class: Foci
+Rarity: Rare
+Mind Anthem
+Druidic Focus
+--------
+Energy Shield: 248 (augmented)
+--------
+Requires: Level 65, 91 Int
+--------
+Item Level: 81
+--------
++72 to maximum Energy Shield
+100% increased Energy Shield
++153 to maximum Mana
++33% to Fire Resistance
++39% to Lightning Resistance

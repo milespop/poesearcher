@@ -249,4 +249,59 @@ describe('Table 19: EXTRA DAMAGE CONVERSIONS', () => {
       expect(genericChaos?.value).toBe(8);
     });
   });
+
+  describe('Minion-Based Damage Conversions', () => {
+    it('should map "Gain #% of Damage as Chaos Damage per Undead Minion"', () => {
+      const result = findStatMapping('Gain 2% of Damage as Chaos Damage per Undead Minion');
+      expect(result).toBeTruthy();
+      expect(result?.filterText).toBe('Gain #% of Damage as Chaos Damage per Undead Minion');
+      expect(result?.group).toBe('explicit');
+      expect(result?.value).toBe(2);
+    });
+
+    it('should handle different undead minion chaos damage values', () => {
+      const result1 = findStatMapping('Gain 1% of Damage as Chaos Damage per Undead Minion');
+      expect(result1?.value).toBe(1);
+
+      const result2 = findStatMapping('Gain 3% of Damage as Chaos Damage per Undead Minion');
+      expect(result2?.value).toBe(3);
+
+      const result3 = findStatMapping('Gain 5% of Damage as Chaos Damage per Undead Minion');
+      expect(result3?.value).toBe(5);
+    });
+
+    it('should handle undead minion chaos damage with flexible whitespace', () => {
+      const result = findStatMapping('Gain  4%  of  Damage  as  Chaos  Damage  per  Undead  Minion');
+      expect(result).toBeTruthy();
+      expect(result?.filterText).toBe('Gain #% of Damage as Chaos Damage per Undead Minion');
+      expect(result?.value).toBe(4);
+    });
+
+    it('should not match incorrect minion damage patterns', () => {
+      const result1 = findStatMapping('Gain 2% of Damage as Fire Damage per Undead Minion');
+      expect(result1).toBeFalsy();
+
+      const result2 = findStatMapping('Gain 2% of Damage as Chaos Damage per Minion');
+      expect(result2).toBeFalsy();
+
+      const result3 = findStatMapping('Gain 2% of Chaos Damage per Undead Minion');
+      expect(result3).toBeFalsy();
+
+      const result4 = findStatMapping('Gain of Damage as Chaos Damage per Undead Minion');
+      expect(result4).toBeFalsy();
+    });
+
+    it('should not conflict with existing chaos damage stats', () => {
+      const minionResult = findStatMapping('Gain 2% of Damage as Chaos Damage per Undead Minion');
+      expect(minionResult).toBeTruthy();
+      expect(minionResult?.filterText).toBe('Gain #% of Damage as Chaos Damage per Undead Minion');
+
+      const extraResult = findStatMapping('Gain 8% of Damage as Extra Chaos Damage');
+      expect(extraResult).toBeTruthy();
+      expect(extraResult?.filterText).toBe('Gain #% of Damage as Extra Chaos Damage');
+
+      // Ensure they are different mappings
+      expect(minionResult?.filterText).not.toBe(extraResult?.filterText);
+    });
+  });
 });

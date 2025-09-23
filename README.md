@@ -4,6 +4,7 @@ A modern TypeScript Chrome extension that automates item searching on the Path o
 
 ## Disclaimer
 This extension is in early Alpha and still undergoing development/implementation. Please be mindful of this when using it.
+If you find any issues, please feel free to [create a new issue](https://github.com/milespop/poesearcher/issues) if there isn't one already for your issue.
 
 ## Installation
 
