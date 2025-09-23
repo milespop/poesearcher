@@ -4,15 +4,13 @@ on:
   pull_request:
     branches:
       - '*'
-    branches-ignore:
-      - 'main'
     paths:
       - 'src/**'
       - 'package.json'
       - '.changeset/**'
       - '.github/workflows/**'
   push:
-    branches:
+    branches-ignore:
       - main
     paths:
       - 'src/**'
