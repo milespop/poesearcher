@@ -11,6 +11,7 @@ export interface StatMapping {
   group: 'explicit' | 'implicit' | 'pseudo' | 'fractured' | 'desecrated';
   extractValue: (statText: string) => number | null;
   dynamic?: boolean; // Optional flag for stats that might not appear in initial dropdown
+  unsupported?: boolean; // Optional flag for stats that are intentionally unsupported
 }
 
 export interface StatMappingResult extends StatMapping {
@@ -324,6 +325,7 @@ const POE_STAT_MAPPINGS = {
     '% increased Light Radius': {
       filterText: '#% increased Light Radius',
       group: 'explicit' as const,
+      unsupported: true,
       extractValue: (statText: string): number | null => {
         const match = statText.match(/(\d+)%\s+increased\s+Light\s+Radius/);
         return match ? parseInt(match[1]) : null;
@@ -1093,11 +1095,19 @@ const POE_STAT_MAPPINGS = {
       filterText: '#% increased Stun Buildup',
       group: 'explicit' as const,
       extractValue: (statText: string): number | null => {
-        // Only match generic stun buildup without weapon specifics
-        if (statText.includes('with ')) {
+        // Only match generic stun buildup without weapon specifics and without "Causes"
+        if (statText.includes('with ') || statText.includes('Causes')) {
           return null;
         }
         const match = statText.match(/(\d+)%\s+increased Stun Buildup/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    'Causes % increased Stun Buildup': {
+      filterText: 'Causes #% increased Stun Buildup',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/Causes\s+(\d+)%\s+increased Stun Buildup/);
         return match ? parseInt(match[1]) : null;
       }
     },
@@ -1797,6 +1807,7 @@ const POE_STAT_MAPPINGS = {
       filterText: '#% reduced Attribute Requirements',
       group: 'explicit' as const,
       dynamic: true,
+      unsupported: true,
       extractValue: (statText: string): number | null => {
         const match = statText.match(/(\d+)% reduced Attribute Requirements/);
         return match ? parseInt(match[1]) : null;

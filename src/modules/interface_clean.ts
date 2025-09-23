@@ -2,6 +2,7 @@
 // Simple, polished interface following Material Design principles
 
 import type { ParsedItem, ValidationResult } from './itemParser';
+import type { StatMapping as StatMappingConfig } from './statMappings';
 import { createLogger } from './logger';
 import { validateEntireSiteStructure, type ComprehensiveSiteValidation } from './siteValidator';
 
@@ -1795,8 +1796,8 @@ export class POESearcherInterface {
 
     // Process explicit stats
     parsed.stats.forEach(stat => {
-      const mapping = (window as any).findStatMapping(stat, parsed.itemClass) as StatMapping | null;
-      if (mapping) {
+      const mapping = (window as any).findStatMapping(stat, parsed.itemClass) as StatMappingConfig | null;
+      if (mapping && !mapping.unsupported) {
         mappedStats.push(stat);
       } else {
         unmappedStats.push(stat);
@@ -1805,8 +1806,8 @@ export class POESearcherInterface {
 
     // Process implicit stats
     parsed.implicitStats.forEach(stat => {
-      const mapping = (window as any).findStatMapping(stat, parsed.itemClass) as StatMapping | null;
-      if (mapping) {
+      const mapping = (window as any).findStatMapping(stat, parsed.itemClass) as StatMappingConfig | null;
+      if (mapping && !mapping.unsupported) {
         mappedImplicits.push(stat);
       } else {
         unmappedImplicits.push(stat);
@@ -1858,10 +1859,12 @@ export class POESearcherInterface {
 
       // Add unmapped implicit stats (red with unsupported label - will be skipped)
       unmappedImplicits.forEach((stat, index) => {
+        const mapping = (window as any).findStatMapping(stat) as StatMappingConfig | null;
+        const unsupportedText = mapping?.unsupported ? '(intentionally unsupported)' : '(unsupported)';
         content += `<div class="poe-stat-line unmapped implicit">
           <label class="poe-stat-checkbox-label">
             <input type="checkbox" class="poe-stat-checkbox" data-stat="${stat}" data-type="implicit" data-index="${index}" disabled>
-            <span class="poe-stat-text">${stat} (unsupported)</span>
+            <span class="poe-stat-text">${stat} ${unsupportedText}</span>
           </label>
         </div>`;
       });
@@ -1924,10 +1927,12 @@ export class POESearcherInterface {
 
       // Add unmapped stats (red with unsupported label - will be skipped)
       unmappedStats.forEach((stat, index) => {
+        const mapping = (window as any).findStatMapping(stat) as StatMappingConfig | null;
+        const unsupportedText = mapping?.unsupported ? '(intentionally unsupported)' : '(unsupported)';
         content += `<div class="poe-stat-line unmapped">
           <label class="poe-stat-checkbox-label">
             <input type="checkbox" class="poe-stat-checkbox" data-stat="${stat}" data-type="explicit" data-index="${index}" disabled>
-            <span class="poe-stat-text">${stat} (unsupported)</span>
+            <span class="poe-stat-text">${stat} ${unsupportedText}</span>
           </label>
         </div>`;
       });

@@ -33,10 +33,10 @@ export type TradeCategory =
   | 'Staff' | 'Crossbow' | 'Shield' | 'Amulet' | 'Ring' | 'Belt'
   | 'Gloves' | 'Boots' | 'Body Armour' | 'Helmet' | 'Bow' | 'Wand'
   | 'One Hand Sword' | 'One Hand Axe' | 'One Hand Mace' | 'Dagger'
-  | 'Claw' | 'Sceptre' | 'Two Hand Sword' | 'Two Hand Axe'
-  | 'Two Hand Mace' | 'Quarterstaff' | 'Spear' | 'Flail' | 'Jewel' | 'Flask' | 'Focus';
+  | 'Claw' | 'Sceptre' | 'Two-Handed Sword' | 'Two-Handed Axe' | 'Two Hand Sword' | 'Two Hand Axe'
+  | 'Two-Handed Mace' | 'Two Hand Mace' | 'Quarterstaff' | 'Spear' | 'Flail' | 'Jewel' | 'Flask' | 'Focus';
 
-// Item category mapping for POE trade site
+// Item category mapping for POE trade site with fallback support
 export const ITEM_CLASS_TO_CATEGORY: Record<ItemClass, TradeCategory> = {
   'Staves': 'Staff',
   'Crossbows': 'Crossbow',
@@ -56,9 +56,9 @@ export const ITEM_CLASS_TO_CATEGORY: Record<ItemClass, TradeCategory> = {
   'Daggers': 'Dagger',
   'Claws': 'Claw',
   'Sceptres': 'Sceptre',
-  'Two Hand Swords': 'Two Hand Sword',
-  'Two Hand Axes': 'Two Hand Axe',
-  'Two Hand Maces': 'Two Hand Mace',
+  'Two Hand Swords': 'Two-Handed Sword',
+  'Two Hand Axes': 'Two-Handed Axe',
+  'Two Hand Maces': 'Two-Handed Mace',
   'Quarterstaves': 'Quarterstaff',
   'Spears': 'Spear',
   'Flails': 'Flail',
@@ -66,6 +66,13 @@ export const ITEM_CLASS_TO_CATEGORY: Record<ItemClass, TradeCategory> = {
   'Flasks': 'Flask',
   'Foci': 'Focus'
 } as const;
+
+// Fallback mappings for two-handed weapons (try hyphenated first, then space version)
+export const CATEGORY_FALLBACKS: Record<string, string[]> = {
+  'Two Hand Swords': ['Two-Handed Sword', 'Two Hand Sword'],
+  'Two Hand Axes': ['Two-Handed Axe', 'Two Hand Axe'],
+  'Two Hand Maces': ['Two-Handed Mace', 'Two Hand Mace']
+};
 
 // Validate POE item format
 export function validatePOEItemFormat(text: string): ValidationResult {
@@ -218,5 +225,6 @@ export function parseItem(text: string): ParsedItem {
 
 // Browser environment - attach to window
 (window as any).ITEM_CLASS_TO_CATEGORY = ITEM_CLASS_TO_CATEGORY;
+(window as any).CATEGORY_FALLBACKS = CATEGORY_FALLBACKS;
 (window as any).validatePOEItemFormat = validatePOEItemFormat;
 (window as any).parseItem = parseItem;

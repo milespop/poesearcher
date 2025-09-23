@@ -49,6 +49,14 @@ describe('Accuracy & Stun', () => {
     expect(result?.value).toBe(35);
   });
 
+  it('should map "Causes #% increased Stun Buildup"', () => {
+    const result = findStatMapping('Causes 71% increased Stun Buildup');
+    expect(result).toBeTruthy();
+    expect(result?.filterText).toBe('Causes #% increased Stun Buildup');
+    expect(result?.group).toBe('explicit');
+    expect(result?.value).toBe(71);
+  });
+
   it('should map "#% increased Stun Threshold if you haven\'t been Stunned Recently"', () => {
     const result = findStatMapping('50% increased Stun Threshold if you haven\'t been Stunned Recently');
     expect(result).toBeTruthy();
@@ -71,6 +79,14 @@ describe('Accuracy & Stun', () => {
 
     const genericResult = findStatMapping('40% increased Stun Buildup');
     expect(genericResult?.filterText).toBe('#% increased Stun Buildup');
+  });
+
+  it('should differentiate between "Causes" and regular Stun Buildup', () => {
+    const causesResult = findStatMapping('Causes 71% increased Stun Buildup');
+    expect(causesResult?.filterText).toBe('Causes #% increased Stun Buildup');
+
+    const regularResult = findStatMapping('40% increased Stun Buildup');
+    expect(regularResult?.filterText).toBe('#% increased Stun Buildup');
   });
 
   it('should prioritize conditional stun threshold over generic', () => {
