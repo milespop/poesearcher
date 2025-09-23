@@ -1492,6 +1492,88 @@ const POE_STAT_MAPPINGS = {
       }
     },
 
+    // === SKILL-SPECIFIC MODIFIERS ===
+    '% increased Damage with Bow Skills': {
+      filterText: '#% increased Damage with Bow Skills',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)%\s+increased\s+Damage\s+with\s+Bow\s+Skills/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    '% increased Damage with Bows': {
+      filterText: '#% increased Damage with Bows',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)%\s+increased\s+Damage\s+with\s+Bows/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    '% increased Damage with Crossbows': {
+      filterText: '#% increased Damage with Crossbows',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)%\s+increased\s+Damage\s+with\s+Crossbows/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    '% increased Damage with Quarterstaves': {
+      filterText: '#% increased Damage with Quarterstaves',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)%\s+increased\s+Damage\s+with\s+Quarterstaves/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    '% increased Damage with Spears': {
+      filterText: '#% increased Damage with Spears',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)%\s+increased\s+Damage\s+with\s+Spears/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    '% increased Damage with Maces': {
+      filterText: '#% increased Damage with Maces',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)%\s+increased\s+Damage\s+with\s+Maces/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    'Herald Skills deal % increased Damage': {
+      filterText: 'Herald Skills deal #% increased Damage',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/Herald\s+Skills\s+deal\s+(\d+)%\s+increased\s+Damage/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    'Meta Skills gain % increased Energy': {
+      filterText: 'Meta Skills gain #% increased Energy',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/Meta\s+Skills\s+gain\s+(\d+)%\s+increased\s+Energy/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    '% increased Skill Effect Duration': {
+      filterText: '#% increased Skill Effect Duration',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)%\s+increased\s+Skill\s+Effect\s+Duration/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    '% increased Charm Effect Duration': {
+      filterText: '#% increased Charm Effect Duration',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)%\s+increased\s+Charm\s+Effect\s+Duration/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+
     // === EXTRA DAMAGE CONVERSION STATS ===
     'Gain.*of Damage as Extra Cold Damage': {
       filterText: 'Gain #% of Damage as Extra Cold Damage',
