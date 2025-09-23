@@ -1336,6 +1336,162 @@ const POE_STAT_MAPPINGS = {
       }
     },
 
+    // === LEECH & RECOVERY ADVANCED ===
+    '% increased amount of Life Leeched': {
+      filterText: '#% increased amount of Life Leeched',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)%\s+increased\s+amount\s+of\s+Life\s+Leeched/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    '% increased amount of Mana Leeched': {
+      filterText: '#% increased amount of Mana Leeched',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)%\s+increased\s+amount\s+of\s+Mana\s+Leeched/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    'Recover % of maximum Life on Kill': {
+      filterText: 'Recover #% of maximum Life on Kill',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/Recover (\d+)%\s+of\s+maximum\s+Life\s+on\s+Kill/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    'Recover % of maximum Mana on Kill (Jewel)': {
+      filterText: 'Recover #% of maximum Mana on Kill (Jewel)',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/Recover (\d+)%\s+of\s+maximum\s+Mana\s+on\s+Kill(?:\s+\(Jewel\))?/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    'Gain # Life per Enemy Hit with Attacks': {
+      filterText: 'Gain # Life per Enemy Hit with Attacks',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/Gain (\d+)\s+Life\s+per\s+Enemy\s+Hit\s+with\s+Attacks/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    'Grants # Life per Enemy Hit': {
+      filterText: 'Grants # Life per Enemy Hit',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/Grants (\d+)\s+Life\s+per\s+Enemy\s+Hit/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    '% of Damage taken Recouped as Life': {
+      filterText: '#% of Damage taken Recouped as Life',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)%\s+of\s+Damage\s+taken\s+Recouped\s+as\s+Life/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    '% of Damage taken Recouped as Mana': {
+      filterText: '#% of Damage taken Recouped as Mana',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)%\s+of\s+Damage\s+taken\s+Recouped\s+as\s+Mana/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+
+    // === FLASK MODIFIERS ===
+    '% increased Flask Charges gained': {
+      filterText: '#% increased Flask Charges gained',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)%\s+increased\s+Flask\s+Charges\s+gained/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    '% increased Flask Life Recovery rate': {
+      filterText: '#% increased Flask Life Recovery rate',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)%\s+increased\s+Flask\s+Life\s+Recovery\s+rate/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    '% increased Flask Mana Recovery rate': {
+      filterText: '#% increased Flask Mana Recovery rate',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)%\s+increased\s+Flask\s+Mana\s+Recovery\s+rate/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    '% increased Flask Effect Duration': {
+      filterText: '#% increased Flask Effect Duration',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)%\s+increased\s+Flask\s+Effect\s+Duration/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    '% reduced Flask Charges used': {
+      filterText: '#% reduced Flask Charges used',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)%\s+reduced\s+Flask\s+Charges\s+used/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    'Life Flasks gain # charges per Second': {
+      filterText: 'Life Flasks gain # charges per Second',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/Life\s+Flasks\s+gain\s+(\d+)\s+charges\s+per\s+Second/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    'Mana Flasks gain # charges per Second': {
+      filterText: 'Mana Flasks gain # charges per Second',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/Mana\s+Flasks\s+gain\s+(\d+)\s+charges\s+per\s+Second/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    'Life Flasks used while on Low Life apply Recovery Instantly': {
+      filterText: 'Life Flasks used while on Low Life apply Recovery Instantly',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/Life\s+Flasks\s+used\s+while\s+on\s+Low\s+Life\s+apply\s+Recovery\s+Instantly/);
+        return match ? 1 : null; // Boolean stat represented as 1
+      }
+    },
+    'Mana Flasks used while on Low Mana apply Recovery Instantly': {
+      filterText: 'Mana Flasks used while on Low Mana apply Recovery Instantly',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/Mana\s+Flasks\s+used\s+while\s+on\s+Low\s+Mana\s+apply\s+Recovery\s+Instantly/);
+        return match ? 1 : null; // Boolean stat represented as 1
+      }
+    },
+    '% more Recovery if used while on Low Life': {
+      filterText: '#% more Recovery if used while on Low Life',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)%\s+more\s+Recovery\s+if\s+used\s+while\s+on\s+Low\s+Life/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    '% increased Recovery rate': {
+      filterText: '#% increased Recovery rate',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)%\s+increased\s+Recovery\s+rate/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+
     // === EXTRA DAMAGE CONVERSION STATS ===
     'Gain.*of Damage as Extra Cold Damage': {
       filterText: 'Gain #% of Damage as Extra Cold Damage',
@@ -1623,6 +1779,32 @@ const POE_STAT_MAPPINGS = {
       group: 'explicit' as const,
       extractValue: (statText: string): number | null => {
         const match = statText.match(/Minions Revive (\d+)%\s+faster/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+
+    // === TOTEM STATS ===
+    '% increased Totem Damage': {
+      filterText: '#% increased Totem Damage',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)%\s+increased\s+Totem\s+Damage/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    '% increased Totem Life': {
+      filterText: '#% increased Totem Life',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)%\s+increased\s+Totem\s+Life/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    '% increased Totem Placement speed': {
+      filterText: '#% increased Totem Placement speed',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)%\s+increased\s+Totem\s+Placement\s+speed/);
         return match ? parseInt(match[1]) : null;
       }
     }
