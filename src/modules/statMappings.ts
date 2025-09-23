@@ -22,7 +22,8 @@ export interface StatMappingResult extends StatMapping {
 export type ItemClass =
   | 'Staves' | 'Crossbows' | 'Shields' | 'Bows' | 'Wands' | 'Swords' | 'Axes' | 'Maces'
   | 'Daggers' | 'Claws' | 'Sceptres' | 'Two Hand Swords' | 'Two Hand Axes'
-  | 'Two Hand Maces' | 'Quarterstaves' | 'Spears' | 'Flails';
+  | 'Two Hand Maces' | 'Quarterstaves' | 'Spears' | 'Flails'
+  | 'Gloves' | 'Boots' | 'Body Armours' | 'Helmets';
 
 // Type to enforce unique keys in stat mappings - TypeScript will error if duplicate keys exist
 type EnsureUniqueKeys<T> = {
@@ -271,11 +272,60 @@ const POE_STAT_MAPPINGS = {
         return match ? parseInt(match[1]) : null;
       }
     },
+    // === MOVEMENT & UTILITY STATS ===
+    '% increased Movement Speed while affected by an Ailment': {
+      filterText: '#% increased Movement Speed while affected by an Ailment',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)%\s+increased\s+Movement\s+Speed\s+while\s+affected\s+by\s+an\s+Ailment/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
     'increased Movement Speed': {
       filterText: '#% increased Movement Speed',
       group: 'explicit' as const,
       extractValue: (statText: string): number | null => {
-        const match = statText.match(/(\d+)%\s+increased Movement Speed/);
+        const match = statText.match(/^(\d+)%\s+increased\s+Movement\s+Speed$/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    '% increased Projectile Speed': {
+      filterText: '#% increased Projectile Speed',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)%\s+increased\s+Projectile\s+Speed/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    'Projectiles Pierce all Ignited enemies': {
+      filterText: 'Projectiles Pierce all Ignited enemies',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/Projectiles\s+Pierce\s+all\s+Ignited\s+enemies/);
+        return match ? 1 : null; // Boolean stat represented as 1
+      }
+    },
+    'Attacks Chain an additional time': {
+      filterText: 'Attacks Chain an additional time',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/Attacks\s+Chain\s+an\s+additional\s+time/);
+        return match ? 1 : null; // Boolean stat represented as 1
+      }
+    },
+    'Bow Attacks fire # additional Arrows': {
+      filterText: 'Bow Attacks fire # additional Arrows',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/Bow\s+Attacks\s+fire\s+(\d+)\s+additional\s+Arrows/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    '% increased Light Radius': {
+      filterText: '#% increased Light Radius',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)%\s+increased\s+Light\s+Radius/);
         return match ? parseInt(match[1]) : null;
       }
     },
@@ -387,11 +437,60 @@ const POE_STAT_MAPPINGS = {
         return match ? parseInt(match[1]) : null;
       }
     },
+    // === EXPERIENCE, GOLD & RARITY STATS ===
+    '% increased Rarity of Items found in your Maps': {
+      filterText: '#% increased Rarity of Items found in your Maps',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)%\s+increased\s+Rarity\s+of\s+Items\s+found\s+in\s+your\s+Maps/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
     'increased Rarity of Items found': {
       filterText: '#% increased Rarity of Items found',
       group: 'explicit' as const,
       extractValue: (statText: string): number | null => {
-        const match = statText.match(/(\d+)%\s+increased Rarity of Items found/);
+        const match = statText.match(/^(\d+)%\s+increased\s+Rarity\s+of\s+Items\s+found$/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    '% increased Experience gain': {
+      filterText: '#% increased Experience gain',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/^(\d+)%\s+increased\s+Experience\s+gain$/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    '% increased Experience gain in your Maps': {
+      filterText: '#% increased Experience gain in your Maps',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)%\s+increased\s+Experience\s+gain\s+in\s+your\s+Maps/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    '% increased Gold found in this Area (Gold Piles)': {
+      filterText: '#% increased Gold found in this Area (Gold Piles)',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)%\s+increased\s+Gold\s+found\s+in\s+this\s+Area\s+\(Gold\s+Piles\)/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    '% increased Gold found in your Maps (Gold Piles)': {
+      filterText: '#% increased Gold found in your Maps (Gold Piles)',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)%\s+increased\s+Gold\s+found\s+in\s+your\s+Maps\s+\(Gold\s+Piles\)/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    '% increased Quantity of Items found in your Maps': {
+      filterText: '#% increased Quantity of Items found in your Maps',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)%\s+increased\s+Quantity\s+of\s+Items\s+found\s+in\s+your\s+Maps/);
         return match ? parseInt(match[1]) : null;
       }
     },
@@ -847,6 +946,14 @@ const POE_STAT_MAPPINGS = {
       group: 'explicit' as const,
       extractValue: (statText: string): number | null => {
         const match = statText.match(/(\d+)%\s+increased Evasion Rating/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    ' to maximum Energy Shield (Local)': {
+      filterText: '# to maximum Energy Shield (Local)',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/\+?(\d+)\s+to\s+maximum\s+Energy\s+Shield/);
         return match ? parseInt(match[1]) : null;
       }
     },
@@ -1575,35 +1682,67 @@ const POE_STAT_MAPPINGS = {
     },
 
     // === EXTRA DAMAGE CONVERSION STATS ===
-    'Gain.*of Damage as Extra Cold Damage': {
+    'Attacks Gain.*of Damage as Extra Fire Damage': {
+      filterText: 'Attacks Gain #% of Damage as Extra Fire Damage',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/Attacks\s+Gain\s+(\d+)%\s+of\s+Damage\s+as\s+Extra\s+Fire\s+Damage/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    'Attacks Gain.*of Damage as Extra Cold Damage': {
+      filterText: 'Attacks Gain #% of Damage as Extra Cold Damage',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/Attacks\s+Gain\s+(\d+)%\s+of\s+Damage\s+as\s+Extra\s+Cold\s+Damage/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    'Attacks Gain.*of Damage as Extra Lightning Damage': {
+      filterText: 'Attacks Gain #% of Damage as Extra Lightning Damage',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/Attacks\s+Gain\s+(\d+)%\s+of\s+Damage\s+as\s+Extra\s+Lightning\s+Damage/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    'Attacks Gain.*of Damage as Extra Chaos Damage': {
+      filterText: 'Attacks Gain #% of Damage as Extra Chaos Damage',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/Attacks\s+Gain\s+(\d+)%\s+of\s+Damage\s+as\s+Extra\s+Chaos\s+Damage/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
+    'Gain % of Damage as Extra Cold Damage': {
       filterText: 'Gain #% of Damage as Extra Cold Damage',
       group: 'explicit' as const,
       extractValue: (statText: string): number | null => {
-        const match = statText.match(/Gain (\d+)% of Damage as Extra Cold Damage/);
+        const match = statText.match(/^Gain\s+(\d+)%\s+of\s+Damage\s+as\s+Extra\s+Cold\s+Damage$/);
         return match ? parseInt(match[1]) : null;
       }
     },
-    'Gain.*of Damage as Extra Lightning Damage': {
+    'Gain % of Damage as Extra Lightning Damage': {
       filterText: 'Gain #% of Damage as Extra Lightning Damage',
       group: 'explicit' as const,
       extractValue: (statText: string): number | null => {
-        const match = statText.match(/Gain (\d+)% of Damage as Extra Lightning Damage/);
+        const match = statText.match(/^Gain\s+(\d+)%\s+of\s+Damage\s+as\s+Extra\s+Lightning\s+Damage$/);
         return match ? parseInt(match[1]) : null;
       }
     },
-    'Gain.*of Damage as Extra Fire Damage': {
+    'Gain % of Damage as Extra Fire Damage': {
       filterText: 'Gain #% of Damage as Extra Fire Damage',
       group: 'explicit' as const,
       extractValue: (statText: string): number | null => {
-        const match = statText.match(/Gain (\d+)% of Damage as Extra Fire Damage/);
+        const match = statText.match(/^Gain\s+(\d+)%\s+of\s+Damage\s+as\s+Extra\s+Fire\s+Damage$/);
         return match ? parseInt(match[1]) : null;
       }
     },
-    'Gain.*of Damage as Extra Chaos Damage': {
+    'Gain % of Damage as Extra Chaos Damage': {
       filterText: 'Gain #% of Damage as Extra Chaos Damage',
       group: 'explicit' as const,
       extractValue: (statText: string): number | null => {
-        const match = statText.match(/Gain (\d+)% of Damage as Extra Chaos Damage/);
+        const match = statText.match(/^Gain\s+(\d+)%\s+of\s+Damage\s+as\s+Extra\s+Chaos\s+Damage$/);
         return match ? parseInt(match[1]) : null;
       }
     },
@@ -1903,10 +2042,16 @@ const WEAPON_CATEGORIES: readonly ItemClass[] = [
 // Define shield category for Block chance (Local) priority
 const SHIELD_CATEGORY = 'Shields';
 
+// Define armor categories for Armour and Evasion (Local) priority
+const ARMOR_CATEGORIES: readonly ItemClass[] = [
+  'Gloves', 'Boots', 'Body Armours', 'Helmets'
+] as const;
+
 // Stat mapping utility functions
 export function findStatMapping(statText: string, itemClass: string | null = null): StatMappingResult | null {
   const isWeapon = itemClass && WEAPON_CATEGORIES.includes(itemClass as ItemClass);
   const isShield = itemClass === SHIELD_CATEGORY;
+  const isArmor = itemClass && ARMOR_CATEGORIES.includes(itemClass as ItemClass);
 
   // For weapons, prioritize local versions of Attack Speed and Accuracy Rating
   // BUT exclude presence-specific patterns which should never be local
@@ -1944,8 +2089,65 @@ export function findStatMapping(statText: string, itemClass: string | null = nul
     }
   }
 
+  // For armor pieces, prioritize local versions of Armour and Evasion Rating
+  if (isArmor) {
+    if (statText.includes('to Armour') && !statText.includes('increased')) {
+      // Try Armour (Local) first for armor pieces
+      const localMapping = POE_STAT_MAPPINGS.mappings[' to Armour (Local)'];
+      if (localMapping) {
+        const value = localMapping.extractValue(statText);
+        if (value !== null) {
+          return { ...localMapping, value, originalText: statText, searchKey: ' to Armour (Local)' };
+        }
+      }
+    } else if (statText.includes('increased Armour')) {
+      // Try increased Armour (Local) first for armor pieces
+      const localMapping = POE_STAT_MAPPINGS.mappings['% increased Armour (Local)'];
+      if (localMapping) {
+        const value = localMapping.extractValue(statText);
+        if (value !== null) {
+          return { ...localMapping, value, originalText: statText, searchKey: '% increased Armour (Local)' };
+        }
+      }
+    } else if (statText.includes('to Evasion Rating') && !statText.includes('increased')) {
+      // Try Evasion Rating (Local) first for armor pieces
+      const localMapping = POE_STAT_MAPPINGS.mappings[' to Evasion Rating (Local)'];
+      if (localMapping) {
+        const value = localMapping.extractValue(statText);
+        if (value !== null) {
+          return { ...localMapping, value, originalText: statText, searchKey: ' to Evasion Rating (Local)' };
+        }
+      }
+    } else if (statText.includes('increased Evasion Rating')) {
+      // Try increased Evasion Rating (Local) first for armor pieces
+      const localMapping = POE_STAT_MAPPINGS.mappings['% increased Evasion Rating (Local)'];
+      if (localMapping) {
+        const value = localMapping.extractValue(statText);
+        if (value !== null) {
+          return { ...localMapping, value, originalText: statText, searchKey: '% increased Evasion Rating (Local)' };
+        }
+      }
+    }
+  }
+
+  // For armor pieces and shields, prioritize local version of Energy Shield
+  if ((isArmor || isShield) && statText.includes('to maximum Energy Shield')) {
+    // Try Energy Shield (Local) first for armor pieces and shields
+    const localMapping = POE_STAT_MAPPINGS.mappings[' to maximum Energy Shield (Local)'];
+    if (localMapping) {
+      const value = localMapping.extractValue(statText);
+      if (value !== null) {
+        return { ...localMapping, value, originalText: statText, searchKey: ' to maximum Energy Shield (Local)' };
+      }
+    }
+  }
+
   // Standard search for all other cases or if no local version found
   for (const [key, mapping] of Object.entries(POE_STAT_MAPPINGS.mappings)) {
+    // Skip local modifiers in standard search - they should only be used via item-type-specific logic above
+    if (key.includes('(Local)')) {
+      continue;
+    }
     const value = mapping.extractValue(statText);
     if (value !== null) {
       return { ...mapping, value, originalText: statText, searchKey: key };
