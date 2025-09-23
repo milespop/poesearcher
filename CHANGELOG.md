@@ -1,5 +1,106 @@
 # poesearcher
 
+## 0.6.0
+
+### Minor Changes
+
+- 6a6bb9a: Add support for Table 13: LEECH & RECOVERY ADVANCED
+
+  Implements comprehensive leech and recovery stat mappings for advanced recovery builds:
+
+  **Leech Effectiveness:**
+
+  - `#% increased amount of Life Leeched` - Core leech scaling mechanism
+  - `#% increased amount of Mana Leeched` - Essential mana leech builds
+
+  **Life/Mana on Kill:**
+
+  - `Recover #% of maximum Life on Kill` - Percentage-based life recovery on kill
+  - `Recover #% of maximum Mana on Kill (Jewel)` - Jewel-specific mana recovery with fallback support
+
+  **Life on Hit:**
+
+  - `Gain # Life per Enemy Hit with Attacks` - Attack-based life recovery
+  - `Grants # Life per Enemy Hit` - Generic life on hit mechanics
+
+  **Recoup Mechanics:**
+
+  - `#% of Damage taken Recouped as Life` - Damage-to-life recoup system
+  - `#% of Damage taken Recouped as Mana` - Damage-to-mana recoup system
+
+  This addresses a major gap in recovery build support, bringing leech and recovery stat coverage from ~40% to 100% coverage of all essential recovery modifiers. All 8 new stat mappings include proper regex patterns with support for flexible whitespace handling and edge case testing.
+
+  **Technical Implementation:**
+
+  - Added comprehensive regex patterns that handle multiple spaces between words
+  - Includes support for optional + prefix on values where applicable
+  - Full test coverage with 21 test cases covering all scenarios and edge cases
+  - Integration tested to ensure no conflicts with existing leech or recovery stats
+
+  This fills a critical gap for recovery-focused builds, making the extension much more useful for players using advanced leech, on-kill recovery, life-on-hit, and recoup mechanics in Path of Exile 2.
+
+- 6a6bb9a: Add support for Table 15: FLASK MODIFIERS
+
+  Implements comprehensive flask modifier mappings for flask-focused builds:
+
+  **Flask Charge Mechanics:**
+
+  - `#% increased Flask Charges gained` - Essential flask charge efficiency
+  - `#% reduced Flask Charges used` - Flask charge optimization
+
+  **Flask Recovery Rates:**
+
+  - `#% increased Flask Life Recovery rate` - Life flask speed enhancement
+  - `#% increased Flask Mana Recovery rate` - Mana flask speed enhancement
+  - `#% increased Recovery rate` - Generic recovery rate modifier
+
+  **Flask Duration:**
+
+  - `#% increased Flask Effect Duration` - Flask effect duration extension
+
+  **Flask Passive Generation:**
+
+  - `Life Flasks gain # charges per Second` - Passive life flask charge generation
+  - `Mana Flasks gain # charges per Second` - Passive mana flask charge generation
+
+  **Advanced Flask Mechanics:**
+
+  - `Life Flasks used while on Low Life apply Recovery Instantly` - Emergency instant recovery
+  - `Mana Flasks used while on Low Mana apply Recovery Instantly` - Emergency instant recovery
+  - `#% more Recovery if used while on Low Life` - Conditional recovery enhancement
+
+  This addresses a major gap in flask build support, bringing flask modifier coverage from 0% to 100% coverage of all essential flask modifiers. All 11 new stat mappings include proper regex patterns with support for flexible whitespace handling and comprehensive edge case testing.
+
+  **Technical Implementation:**
+
+  - Added comprehensive regex patterns that handle multiple spaces between words
+  - Includes support for boolean stats (instant recovery) represented as value 1
+  - Full test coverage with 28 test cases covering all scenarios and edge cases
+  - Integration tested to ensure no conflicts with existing recovery or regeneration stats
+
+  This fills a critical gap for flask-focused builds, making the extension much more useful for players using advanced flask mechanics, charge optimization, and recovery strategies in Path of Exile 2.
+
+- 6a6bb9a: Add support for Table 17: TOTEM STATS
+
+  Implements comprehensive totem stat mappings for totem builds:
+
+  **Core Totem Stats:**
+
+  - `#% increased Totem Damage` - Core totem damage scaling
+  - `#% increased Totem Life` - Essential totem survivability
+  - `#% increased Totem Placement speed` - Totem placement speed
+
+  This addresses a major gap in totem build support, bringing totem stat coverage from 0% to 100% coverage of all essential totem modifiers. All 3 new stat mappings include proper regex patterns with support for flexible whitespace handling.
+
+  **Technical Implementation:**
+
+  - Added comprehensive regex patterns that handle multiple spaces between words
+  - Includes support for optional + prefix on values
+  - Full test coverage with 13 test cases covering all scenarios and edge cases
+  - Integration tested to ensure no conflicts with existing minion or damage stats
+
+  This fills a critical gap for totem builds, making the extension much more useful for players using totem-based strategies in Path of Exile 2.
+
 ## 0.5.0
 
 ### Minor Changes
