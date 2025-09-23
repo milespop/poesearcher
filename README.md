@@ -2,6 +2,9 @@
 
 A modern TypeScript Chrome extension that automates item searching on the Path of Exile 2 trade website by parsing item text and automatically filling in search filters.
 
+## Disclaimer
+This extension is in early Alpha and still undergoing development/implementation. Please be mindful of this when using it.
+
 ## Installation
 
 ### For Users
@@ -64,12 +67,50 @@ npm run build
 8. Use the **Clear** button to reset input and scale to defaults
 9. Click "Search" to automatically fill and submit the search
 
+## Stat Coverage
+
+**Current Coverage: 58.3% (221+ of 379 total stats)**
+
+### ✅ Fully Supported Categories
+- **Basic Stats**: Life, Mana, Energy Shield, Attributes (100% coverage)
+- **Damage**: Physical, Elemental, Spell, Attack, Projectile damage (95%+ coverage)
+- **Resistances**: All elemental and chaos resistances (100% coverage)
+- **Critical Strikes**: Chance, damage bonus, spell-specific (100% coverage)
+- **Speed**: Attack speed, cast speed, movement speed (100% coverage)
+- **Defense**: Armor, Evasion, Block chance, Energy Shield advanced (100% coverage)
+- **Minion Stats**: All minion damage, life, resistances, speed (100% coverage)
+- **Totems**: Damage, life, placement speed (100% coverage)
+- **Leech & Recovery**: Life/mana leech, recovery on kill, recoup (100% coverage)
+- **Flask Modifiers**: Charges, recovery rate, duration, instant effects (100% coverage)
+- **Status Effects**: Ailment magnitude, duration, chance to inflict (95%+ coverage)
+- **Skill-Specific**: Weapon damage, skill levels, herald effects (100% coverage)
+- **Movement & Utility**: Projectile speed, pierce, chain, additional arrows (100% coverage)
+- **Farming**: Experience gain, gold found, item rarity/quantity (100% coverage)
+- **Local Modifiers**: Weapon, armor, shield local stats with proper item type restrictions (100% coverage)
+
+### ⚠️ Partially Supported Categories
+- **Presence/Aura Effects**: Basic presence stats implemented (~70% coverage)
+- **Area of Effect**: Core AoE stats implemented (~80% coverage)
+- **Equipped Item Bonuses**: Shield bonuses only (~20% coverage)
+
+### ❌ Not Yet Supported Categories
+- **Focus/Quiver/Ring Bonuses**: Equipment-specific bonuses (0% coverage)
+- **Map-Specific Modifiers**: Breach, Delirium, monster mods (0% coverage - low priority)
+
+### Build Support Summary
+- ✅ **Excellent Support**: Minion, Totem, Leech, Flask, Crit, Elemental, Physical builds
+- ✅ **Great Support**: Movement, Projectile, Farming, Status Effect builds
+- ⚠️ **Good Support**: Aura/Support, AoE builds (most common stats covered)
+- ❌ **Limited Support**: Focus, Quiver, Ring scaling builds
+
+The extension covers all essential stats for most popular build archetypes. Missing stats are primarily niche equipment bonuses and map-specific modifiers.
+
 ## Features
 
 - **Automatic Item Parsing**: Paste POE2 item text to automatically extract stats and modifiers
-- **Smart Stat Mapping**: Maps 85+ item stats to their corresponding trade site filters
+- **Smart Stat Mapping**: Maps 220+ item stats to their corresponding trade site filters
 - **Value Scaling**: Scale down stat values (1-100%) for broader search results
-- **Selective Filtering**: Choose which stats to include in your search 
+- **Selective Filtering**: Choose which stats to include in your search
 - **Colorblind Mode**: Modern toggle switch with alternative color scheme for better accessibility
 
 ## Architecture
@@ -335,7 +376,7 @@ interface StorageResult {
 
 ## Supported Stats
 
-The extension currently supports 85+ stat mappings including:
+The extension currently supports 220+ stat mappings including:
 - Elemental resistances and damage
 - Physical and chaos damage
 - Critical strike modifiers

@@ -10,7 +10,7 @@ on:
       - '.changeset/**'
       - '.github/workflows/**'
   push:
-    branches-ignore:
+    branches:
       - main
     paths:
       - 'src/**'
