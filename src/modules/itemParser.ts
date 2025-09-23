@@ -27,14 +27,14 @@ export type ItemClass =
   | 'Gloves' | 'Boots' | 'Body Armours' | 'Helmets' | 'Bows' | 'Wands'
   | 'Swords' | 'Axes' | 'Maces' | 'Daggers' | 'Claws' | 'Sceptres'
   | 'Two Hand Swords' | 'Two Hand Axes' | 'Two Hand Maces'
-  | 'Quarterstaves' | 'Spears' | 'Flails' | 'Jewels' | 'Flasks';
+  | 'Quarterstaves' | 'Spears' | 'Flails' | 'Jewels' | 'Flasks' | 'Foci';
 
 export type TradeCategory =
   | 'Staff' | 'Crossbow' | 'Shield' | 'Amulet' | 'Ring' | 'Belt'
   | 'Gloves' | 'Boots' | 'Body Armour' | 'Helmet' | 'Bow' | 'Wand'
   | 'One Hand Sword' | 'One Hand Axe' | 'One Hand Mace' | 'Dagger'
   | 'Claw' | 'Sceptre' | 'Two Hand Sword' | 'Two Hand Axe'
-  | 'Two Hand Mace' | 'Quarterstaff' | 'Spear' | 'Flail' | 'Jewel' | 'Flask';
+  | 'Two Hand Mace' | 'Quarterstaff' | 'Spear' | 'Flail' | 'Jewel' | 'Flask' | 'Focus';
 
 // Item category mapping for POE trade site
 export const ITEM_CLASS_TO_CATEGORY: Record<ItemClass, TradeCategory> = {
@@ -63,7 +63,8 @@ export const ITEM_CLASS_TO_CATEGORY: Record<ItemClass, TradeCategory> = {
   'Spears': 'Spear',
   'Flails': 'Flail',
   'Jewels': 'Jewel',
-  'Flasks': 'Flask'
+  'Flasks': 'Flask',
+  'Foci': 'Focus'
 } as const;
 
 // Validate POE item format

@@ -27,6 +27,7 @@ export class POESearcherInterface {
   private logger = createLogger('Interface');
   private isExpanded: boolean = false;
   private isExecuting: boolean = false;
+  private version: string = '';
   private _pasteHandler: ((e: ClipboardEvent) => void) | null = null;
   private _searchHandler: ((e: MouseEvent) => void) | null = null;
   private _clearHandler: ((e: MouseEvent) => void) | null = null;
@@ -45,6 +46,7 @@ export class POESearcherInterface {
   async init(): Promise<void> {
     this.logger.info('PoE2 Searcher initializing...');
 
+    await this.loadVersion();
     this.loadStyles();
     this.createInterface();
     this.setupEventHandlers();
@@ -53,6 +55,28 @@ export class POESearcherInterface {
     await this.runValidation();
 
     this.logger.success('PoE2 Searcher ready!');
+  }
+
+  // Load version from manifest.json
+  private async loadVersion(): Promise<void> {
+    try {
+      const manifestData = chrome.runtime.getManifest();
+      this.version = manifestData.version || '';
+      this.logger.info(`PoE2 Searcher version: ${this.version}`);
+    } catch (error) {
+      this.logger.error('Failed to load version from manifest:', error);
+      this.version = '';
+    }
+  }
+
+  // Get formatted title with version
+  private getFormattedTitle(): string {
+    return this.version ? `PoE2 Searcher v${this.version}-alpha` : 'PoE2 Searcher';
+  }
+
+  // Get formatted HTML title with smaller version text
+  private getFormattedHTMLTitle(): string {
+    return this.version ? `PoE2 Searcher <span style="background-color: #2196F3; color: white; padding: 3px 8px; border-radius: 12px; font-size: 0.75em; margin-left: 8px;">v${this.version}-alpha</span>` : 'PoE2 Searcher';
   }
 
   // Load clean custom styles
@@ -1041,8 +1065,9 @@ export class POESearcherInterface {
 
   // Get collapsed interface HTML (Clean FAB)
   private getCollapsedHTML(): string {
+    const title = this.getFormattedTitle();
     return `
-      <button class="poe-fab" aria-label="PoE2 Searcher" title="PoE2 Searcher">
+      <button class="poe-fab" aria-label="${title}" title="${title}">
         <img src="${chrome.runtime.getURL('icons/icon32.png')}" alt="Search" style="width: 20px; height: 20px;">
         <div class="magnifying-glass">🔍</div>
       </button>
@@ -1051,10 +1076,11 @@ export class POESearcherInterface {
 
   // Get expanded interface HTML (Clean Card)
   private getExpandedHTML(): string {
+    const title = this.getFormattedHTMLTitle();
     return `
       <div class="poe-card">
         <div class="poe-header">
-          <h3>PoE2 Searcher</h3>
+          <h3>${title}</h3>
           <div class="poe-header-buttons">
             <button class="poe-options-btn" aria-label="Options" title="Options">⚙</button>
             <button class="poe-close-btn" aria-label="Close">×</button>
