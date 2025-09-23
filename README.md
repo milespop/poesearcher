@@ -2,6 +2,9 @@
 
 A modern TypeScript Chrome extension that automates item searching on the Path of Exile 2 trade website by parsing item text and automatically filling in search filters.
 
+## Disclaimer
+This extension is in early Alpha and still undergoing development/implementation. Please be mindful of this when using it.
+
 ## Installation
 
 ### For Users
