@@ -152,4 +152,20 @@ describe('Presence/Aura Effects', () => {
     const negativeResult = findStatMapping('Enemies in your Presence have -20% to Fire Resistance');
     expect(negativeResult?.value).toBe(-20);
   });
+
+  it('should map "When a Party Member in your Presence Casts a Spell, you Sacrifice #% of Mana and they Leech that Mana"', () => {
+    const result = findStatMapping('When a Party Member in your Presence Casts a Spell, you Sacrifice 10% of Mana and they Leech that Mana');
+    expect(result).toBeTruthy();
+    expect(result?.filterText).toBe('When a Party Member in your Presence Casts a Spell, you Sacrifice #% of Mana and they Leech that Mana');
+    expect(result?.group).toBe('explicit');
+    expect(result?.value).toBe(10);
+  });
+
+  it('should handle different Party Member mana sacrifice values', () => {
+    const result1 = findStatMapping('When a Party Member in your Presence Casts a Spell, you Sacrifice 5% of Mana and they Leech that Mana');
+    expect(result1?.value).toBe(5);
+
+    const result2 = findStatMapping('When a Party Member in your Presence Casts a Spell, you Sacrifice 25% of Mana and they Leech that Mana');
+    expect(result2?.value).toBe(25);
+  });
 });
