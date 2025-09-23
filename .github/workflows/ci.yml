@@ -3,7 +3,9 @@ name: CI
 on:
   pull_request:
     branches:
-      - main
+      - '*'
+    branches-ignore:
+      - 'main'
     paths:
       - 'src/**'
       - 'package.json'
