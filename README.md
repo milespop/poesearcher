@@ -4,7 +4,8 @@ A modern TypeScript Chrome extension that automates item searching on the Path o
 
 ## Disclaimer
 This extension is in early Alpha and still undergoing development/implementation. Please be mindful of this when using it.
-If you find any issues, please feel free to [create a new issue](https://github.com/milespop/poesearcher/issues) if there isn't one already for your issue.
+If you find any issues and you're able, contribute to the repo :) 
+Otherwise please feel free to [create a new issue](https://github.com/milespop/poesearcher/issues) if there isn't one already for your issue.
 
 ## Installation
 
@@ -70,7 +71,7 @@ npm run build
 
 ## Stat Coverage
 
-**Current Coverage: 58.3% (221+ of 379 total stats)**
+**Current Coverage: 47.4% (237 of 500 total stats)**
 
 ### ✅ Fully Supported Categories
 - **Basic Stats**: Life, Mana, Energy Shield, Attributes (100% coverage)
@@ -109,7 +110,7 @@ The extension covers all essential stats for most popular build archetypes. Miss
 ## Features
 
 - **Automatic Item Parsing**: Paste POE2 item text to automatically extract stats and modifiers
-- **Smart Stat Mapping**: Maps 220+ item stats to their corresponding trade site filters
+- **Smart Stat Mapping**: Maps 237 item stats to their corresponding trade site filters
 - **Value Scaling**: Scale down stat values (1-100%) for broader search results
 - **Selective Filtering**: Choose which stats to include in your search
 - **Colorblind Mode**: Modern toggle switch with alternative color scheme for better accessibility
@@ -377,7 +378,7 @@ interface StorageResult {
 
 ## Supported Stats
 
-The extension currently supports 220+ stat mappings including:
+The extension currently supports 237 stat mappings including:
 - Elemental resistances and damage
 - Physical and chaos damage
 - Critical strike modifiers

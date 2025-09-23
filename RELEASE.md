@@ -11,27 +11,31 @@ POE Searcher uses [Changesets](https://github.com/changesets/changesets) to mana
 - GitHub releases with built extension packages
 - Clear contribution workflow
 
-## Developer Workflow
+## For Contributors
 
-### Making Changes with Version Impact
+### Contributing Changes
 
-When you make changes that should trigger a new release:
+When you want to contribute changes that should trigger a new release:
 
-1. **Create a changeset** after making your changes:
+1. **Make your changes** in a feature branch
+2. **Create a changeset** to describe your changes:
    ```bash
    npm run changeset
    ```
-
-2. **Follow the prompts:**
+3. **Follow the prompts:**
    - Select the type of change (major, minor, patch)
    - Write a clear description of what changed
    - This creates a file in `.changeset/` directory
 
-3. **Commit both your changes and the changeset file:**
+4. **Commit both your changes and the changeset file:**
    ```bash
    git add .
    git commit -m "feat: add new search feature"
    ```
+
+5. **Create a Pull Request** to the `main` branch
+   - CI will automatically run tests, typecheck, and build verification
+   - Your changeset will be included when the PR is merged
 
 ### Changeset Types
 
@@ -39,56 +43,54 @@ When you make changes that should trigger a new release:
 - **Minor** (0.X.0): New features, backwards-compatible changes
 - **Major** (X.0.0): Breaking changes
 
-## GitHub Actions Workflow
+## Automated Release Workflow
 
-The release process uses a multi-job GitHub Actions workflow with proper dependencies to ensure quality and reliability:
+### CI Pipeline (Every PR and Push)
 
-### Job Dependencies Flow
+The CI workflow runs on all pull requests and pushes to main:
+- **Tests** - Runs `npm test` to ensure code quality
+- **TypeScript** - Runs `npm run typecheck` to catch type errors
+- **Build** - Builds and packages the extension with `npm run package`
+- **Verification** - Ensures `poesearcher.zip` is created successfully
 
-```
-test → changeset → build → release
-```
+### Release Pipeline (Main Branch Only)
 
-1. **test** - Runs tests to ensure code quality
-2. **changeset** - Handles version management and release detection
-3. **build** - Builds and verifies extension (only on release commits)
-4. **release** - Creates tags and GitHub releases (only after successful build)
+When changes are pushed to main with changesets:
 
-### Two-Phase Process
+**Phase 1: Release PR Creation**
+- Detects changeset files in the push
+- Creates a "Release: v[VERSION]" pull request
+- Updates `package.json` version
+- Updates `CHANGELOG.md` with changeset descriptions
+- Syncs version to `manifest.json` files
 
-**Phase 1: Changeset PR Creation**
-- Runs on pushes with changeset files
-- Only `test` and `changeset` jobs run
-- Creates "Release: Version Packages" PR with version bumps
-
-**Phase 2: Actual Release**
-- Runs when release PR is merged (detects "chore: release packages" commit)
-- All jobs run: `test → changeset → build → release`
-- Extension must build successfully before any tags or releases are created
+**Phase 2: Actual Release** (when release PR is merged)
+- Builds and packages the extension
+- Creates a git tag (e.g., `v0.9.2`)
+- Creates a GitHub release with:
+  - Changelog entries from the version
+  - Installation instructions
+  - The `poesearcher.zip` file as a downloadable asset
 
 ## Release Process
 
-### Automatic Release (Recommended)
+### Automatic Release (Standard Process)
 
-1. **Push changes to main branch** with changesets
-2. **GitHub Action automatically (Phase 1):**
-   - Runs tests
-   - Creates a "Release: Version Packages" PR
-   - Updates package.json version
-   - Updates CHANGELOG.md
-   - Syncs version to manifest.json files
+1. **Contributors create PRs** with changesets
+2. **Maintainer merges PRs** to main branch
+3. **GitHub automatically:**
+   - Creates "Release: v[VERSION]" PR
+   - Updates versions and changelog
 
-3. **Review and merge the release PR**
-4. **GitHub Action then (Phase 2):**
-   - Runs tests again
-   - Builds and verifies the extension
-   - Creates git tag (only after successful build)
-   - Creates a GitHub release
-   - Attaches the built `poesearcher.zip` file
+4. **Maintainer merges release PR**
+5. **GitHub automatically:**
+   - Builds the extension
+   - Creates git tag
+   - Creates GitHub release with zip file
 
-### Manual Release (Alternative)
+### Manual Release (Emergency Only)
 
-If you need to release manually:
+If automated release fails, you can release manually:
 
 ```bash
 # Update versions and changelog
@@ -99,7 +101,7 @@ npm run changeset:release
 
 # Create git tag and push
 git add .
-git commit -m "chore: release v$(node -p "require('./package.json').version")"
+git commit -m "chore: release packages"
 git tag "v$(node -p "require('./package.json').version")"
 git push origin main --tags
 ```
@@ -109,6 +111,10 @@ git push origin main --tags
 - `npm run changeset` - Create a new changeset
 - `npm run changeset:version` - Update versions and changelog
 - `npm run changeset:release` - Build and package extension
+- `npm test` - Run all tests
+- `npm run typecheck` - Run TypeScript type checking
+- `npm run build` - Build the extension
+- `npm run package` - Build and create zip package
 
 ## Files Involved
 
@@ -117,49 +123,52 @@ git push origin main --tags
 - `package.json` - Main version source
 - `src/manifest.json` & `src/extension/manifest.json` - Synced via `scripts/sync-version.js`
 
-## Build Verification
+## Quality Assurance
 
-The workflow includes comprehensive build verification before any release:
+The workflow includes comprehensive quality checks:
 
-### What Gets Verified
-- **Tests pass** - All unit and integration tests must pass
-- **Extension builds** - `npm run changeset:release` must complete successfully
-- **Zip file created** - `poesearcher.zip` must be generated and valid
-- **Artifact handling** - Build output is uploaded and downloaded between jobs
+### CI Checks (Every PR)
+- **Tests** - All unit and integration tests must pass
+- **TypeScript** - Type checking with `npm run typecheck`
+- **Build** - Extension must build successfully
+- **Package** - `poesearcher.zip` must be created and valid
 
-### Build Safety
-- **No tags created on build failure** - Git tags are only created after successful build
-- **No releases on build failure** - GitHub releases are only created after successful build
-- **Build artifacts verified** - Extension zip file is validated before release creation
+### Release Safety
+- **No tags without successful builds** - Git tags only created after successful build
+- **No releases without successful builds** - GitHub releases only created after verification
+- **Artifact validation** - Extension zip file validated before release
 
 ## Troubleshooting
 
-### No Release PR Created
-- Ensure you have committed changeset files to the main branch
-- Check GitHub Actions logs for errors
-- Verify changeset files are in `.changeset/` directory
+### For Contributors
 
-### Build Failures
-- Ensure all tests pass locally: `npm run typecheck`
-- Check that the build succeeds: `npm run build`
-- Verify no TypeScript errors: `npm run typecheck`
-- Check GitHub Actions logs for detailed error messages
+**PR Build Failures:**
+- Run `npm test` locally before pushing
+- Run `npm run typecheck` to catch TypeScript errors
+- Run `npm run build` to ensure extension builds
+- Check GitHub Actions tab for detailed error logs
 
-### Workflow Job Failures
-- **Test job failure** - Check test logs, fix failing tests before proceeding
-- **Changeset job failure** - Usually indicates changeset configuration issues
-- **Build job failure** - Extension build failed, check build logs and fix before release
-- **Release job failure** - Usually indicates GitHub permissions or tag conflicts
+**Changeset Issues:**
+- Ensure changeset file is committed: `git add .changeset/`
+- Changeset files should be small markdown files describing your changes
+- Use `npm run changeset` to create them correctly
 
-### Version Sync Issues
-- The `scripts/sync-version.js` automatically syncs versions to manifest files
-- This runs as part of the `changeset:version` script
-- Ensure all manifest.json files have correct versions before merging release PR
+### For Maintainers
 
-### Job Dependencies Not Working
-- Check that all previous jobs completed successfully
-- Verify job outputs are correctly defined and referenced
-- Ensure proper `needs` dependencies are set in workflow YAML
+**No Release PR Created:**
+- Ensure PRs with changesets were merged to main
+- Check `.changeset/` directory has changeset files
+- Look at GitHub Actions logs in the "Release" workflow
+
+**Release Failures:**
+- Check build logs in the release workflow
+- Verify all dependencies install correctly
+- Ensure `poesearcher.zip` is created in the build step
+
+**Version Sync Issues:**
+- The `scripts/sync-version.js` syncs versions to manifest files
+- This runs automatically during `changeset:version`
+- Check that all manifest.json files have matching versions
 
 ## Example Changeset
 
