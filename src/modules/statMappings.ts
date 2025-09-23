@@ -837,6 +837,14 @@ const POE_STAT_MAPPINGS = {
         return match ? parseInt(match[1]) : null;
       }
     },
+    '% increased Crossbow Reload Speed': {
+      filterText: '#% increased Crossbow Reload Speed',
+      group: 'explicit' as const,
+      extractValue: (statText: string): number | null => {
+        const match = statText.match(/(\d+)%\s+increased Crossbow Reload Speed/);
+        return match ? parseInt(match[1]) : null;
+      }
+    },
     '% increased Attack Speed with Quarterstaves': {
       filterText: '#% increased Attack Speed with Quarterstaves',
       group: 'explicit' as const,

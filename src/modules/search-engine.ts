@@ -87,7 +87,7 @@ function updateDelayProfile(newProfile: keyof typeof DELAY_PROFILES): void {
 
 
 // Main search engine function
-export async function performSearch(parsed: ParsedItem, scalePercent: number = 100): Promise<SearchResult> {
+export async function performSearch(parsed: ParsedItem, scalePercent: number = 100, includeItemCategory: boolean = true): Promise<SearchResult> {
   logger.info('Performing search with item data:', parsed);
   logger.info(`Scale: ${scalePercent}%`);
 
@@ -106,9 +106,13 @@ export async function performSearch(parsed: ParsedItem, scalePercent: number = 1
     logger.debug('Step 1: Clearing existing search');
     await clearSearchForm();
 
-    // Step 2: Set item category
-    logger.debug('Step 2: Setting item type');
-    await setItemType(parsed);
+    // Step 2: Set item category (if enabled)
+    if (includeItemCategory) {
+      logger.debug('Step 2: Setting item type');
+      await setItemType(parsed);
+    } else {
+      logger.debug('Step 2: Skipping item type (disabled by user)');
+    }
 
     // Step 3: Expand filters if we have stats to add
     const allStats = [...(parsed.implicitStats || []), ...(parsed.stats || [])];

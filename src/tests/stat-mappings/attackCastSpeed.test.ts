@@ -34,6 +34,14 @@ describe('Attack & Cast Speed', () => {
     expect(result?.value).toBe(12);
   });
 
+  it('should map "#% increased Crossbow Reload Speed"', () => {
+    const result = findStatMapping('15% increased Crossbow Reload Speed');
+    expect(result).toBeTruthy();
+    expect(result?.filterText).toBe('#% increased Crossbow Reload Speed');
+    expect(result?.group).toBe('explicit');
+    expect(result?.value).toBe(15);
+  });
+
   it('should map "#% increased Attack Speed with Quarterstaves"', () => {
     const result = findStatMapping('18% increased Attack Speed with Quarterstaves');
     expect(result).toBeTruthy();
