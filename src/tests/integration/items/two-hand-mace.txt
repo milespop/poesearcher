@@ -1,0 +1,23 @@
+Item Class: Two Hand Maces
+Rarity: Rare
+Brimstone Smasher
+Fanatic Greathammer
+--------
+Physical Damage: 137-185 (augmented)
+Lightning Damage: 5-112 (lightning)
+Critical Hit Chance: 5.00%
+Attacks per Second: 1.05
+--------
+Requires: Level 78, 114 (augmented) Str
+--------
+Item Level: 84
+--------
+Strikes deal Splash damage to targets within 1.5 metres (implicit)
+--------
+54% increased Physical Damage
+Adds 5 to 112 Lightning Damage
++98 to Accuracy Rating
+134% increased Elemental Damage with Attacks
+30% reduced Attribute Requirements
+Gain 21 Mana per Enemy Killed
+Causes 71% increased Stun Buildup

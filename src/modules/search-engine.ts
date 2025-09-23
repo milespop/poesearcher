@@ -2,6 +2,7 @@
 // Handles POE trade site search operations and DOM manipulation
 
 import type { ParsedItem } from './itemParser';
+import type { StatMapping as StatMappingConfig } from './statMappings';
 import { createLogger } from './logger';
 import { findItemCategoryInput, validateEntireSiteStructure } from './siteValidator';
 import { combineCompatibleStats } from './statCombination';
@@ -12,13 +13,13 @@ export interface SearchResult {
   error?: string;
 }
 
-export interface StatMapping {
+export interface SearchStatMapping {
   filterText: string;
   value?: number;
   group: 'explicit' | 'implicit' | 'pseudo' | 'fractured' | 'desecrated';
 }
 
-export interface ScaledStatMapping extends StatMapping {
+export interface ScaledStatMapping extends SearchStatMapping {
   originalValue?: number;
 }
 
@@ -86,7 +87,7 @@ function updateDelayProfile(newProfile: keyof typeof DELAY_PROFILES): void {
 
 
 // Main search engine function
-export async function performSearch(parsed: ParsedItem, scalePercent: number = 100): Promise<SearchResult> {
+export async function performSearch(parsed: ParsedItem, scalePercent: number = 100, includeItemCategory: boolean = true): Promise<SearchResult> {
   logger.info('Performing search with item data:', parsed);
   logger.info(`Scale: ${scalePercent}%`);
 
@@ -105,9 +106,13 @@ export async function performSearch(parsed: ParsedItem, scalePercent: number = 1
     logger.debug('Step 1: Clearing existing search');
     await clearSearchForm();
 
-    // Step 2: Set item category
-    logger.debug('Step 2: Setting item type');
-    await setItemType(parsed);
+    // Step 2: Set item category (if enabled)
+    if (includeItemCategory) {
+      logger.debug('Step 2: Setting item type');
+      await setItemType(parsed);
+    } else {
+      logger.debug('Step 2: Skipping item type (disabled by user)');
+    }
 
     // Step 3: Expand filters if we have stats to add
     const allStats = [...(parsed.implicitStats || []), ...(parsed.stats || [])];
@@ -234,20 +239,51 @@ async function setItemType(parsed: ParsedItem): Promise<void> {
       (exactOption as HTMLElement).click();
       logger.verbose(`Clicked exact option: "${categoryName}"`);
     } else {
-      // Fallback to Enter key if exact option not found
-      logger.warn(`Exact option not found for "${categoryName}" in available options: [${availableOptions.join(', ')}]`);
-      logger.warn('Using Enter key fallback');
+      // Try fallback categories if available
+      const fallbacks = (window as any).CATEGORY_FALLBACKS?.[parsed.itemClass];
+      let fallbackOption: Element | null = null;
+      let usedFallback: string | null = null;
 
-      const enterEvent = new KeyboardEvent('keydown', {
-        key: 'Enter',
-        code: 'Enter',
-        keyCode: 13,
-        which: 13,
-        bubbles: true,
-        cancelable: true
-      });
-      multiselectInput.dispatchEvent(enterEvent);
-      logger.verbose('Pressing Enter to select category');
+      if (fallbacks && Array.isArray(fallbacks)) {
+        logger.verbose(`Trying fallback categories for "${parsed.itemClass}": [${fallbacks.join(', ')}]`);
+
+        for (const fallbackCategory of fallbacks) {
+          // Skip the already tried primary category
+          if (fallbackCategory === categoryName) continue;
+
+          for (const option of categoryDropdownOptions) {
+            const optionText = option.textContent?.trim();
+            if (optionText === fallbackCategory) {
+              fallbackOption = option;
+              usedFallback = fallbackCategory;
+              logger.verbose(`Found fallback match: "${fallbackCategory}"`);
+              break;
+            }
+          }
+          if (fallbackOption) break;
+        }
+      }
+
+      if (fallbackOption && usedFallback) {
+        // Click the fallback option
+        (fallbackOption as HTMLElement).click();
+        logger.success(`✓ Used fallback category: "${usedFallback}" for "${parsed.itemClass}"`);
+      } else {
+        // Final fallback to Enter key if no matches found
+        logger.warn(`No exact match found for "${categoryName}" or fallbacks in available options: [${availableOptions.join(', ')}]`);
+        logger.warn('Using Enter key fallback');
+
+        const enterEvent = new KeyboardEvent('keydown', {
+          key: 'Enter',
+          code: 'Enter',
+          keyCode: 13,
+          which: 13,
+          bubbles: true,
+          cancelable: true
+        });
+        multiselectInput.dispatchEvent(enterEvent);
+        logger.verbose('Pressing Enter to select category');
+      }
     }
 
     await new Promise(resolve => setTimeout(resolve, DELAYS.setItemType));
@@ -369,16 +405,35 @@ async function addStatFilters(stats: string[], scalePercent: number = 100, itemC
   for (const stat of stats) {
     logger.verbose(`Processing: "${stat}"`);
 
-    const mapping = (window as any).findStatMapping(stat, itemClass) as StatMapping | null;
+    const mapping = (window as any).findStatMapping(stat, itemClass) as StatMappingConfig | null;
     if (!mapping) {
       logger.warn(`No mapping found for: "${stat}"`);
       continue;
     }
 
+    if (mapping.unsupported) {
+      logger.info(`Skipping intentionally unsupported stat: "${stat}"`);
+      continue;
+    }
+
+    // Extract value from stat text and create search mapping
+    const extractedValue = mapping.extractValue(stat);
+    if (extractedValue === null) {
+      logger.warn(`Could not extract value from: "${stat}"`);
+      continue;
+    }
+
+    // Create search mapping with extracted value
+    let searchMapping: SearchStatMapping = {
+      filterText: mapping.filterText,
+      group: mapping.group,
+      value: extractedValue
+    };
+
     // Apply scaling to the mapping value
-    let scaledMapping: ScaledStatMapping = { ...mapping };
-    if (mapping.value && scalePercent !== 100) {
-      const originalValue = mapping.value;
+    let scaledMapping: ScaledStatMapping = { ...searchMapping };
+    if (searchMapping.value && scalePercent !== 100) {
+      const originalValue = searchMapping.value;
       const scaledValue = Math.floor(originalValue * (scalePercent / 100));
       scaledMapping.value = scaledValue;
       scaledMapping.originalValue = originalValue;
@@ -398,7 +453,7 @@ async function addStatFilters(stats: string[], scalePercent: number = 100, itemC
 }
 
 // Add a single stat filter - typing approach
-async function addSingleStatFilter(mapping: StatMapping): Promise<boolean> {
+async function addSingleStatFilter(mapping: SearchStatMapping): Promise<boolean> {
   // Step 1: Find and focus the Add Stat Filter input
   const addInput = document.querySelector<HTMLInputElement>('input[placeholder="+ Add Stat Filter"]');
   if (!addInput) {
@@ -443,7 +498,7 @@ async function addSingleStatFilter(mapping: StatMapping): Promise<boolean> {
     const mutateTypeText = optionMutateType ? optionMutateType.textContent?.trim().toLowerCase() || '' : '';
 
     // Determine the group type from both class and text content
-    let optionGroup: StatMapping['group'] = 'explicit'; // default
+    let optionGroup: SearchStatMapping['group'] = 'explicit'; // default
     if (mutateTypeClass.includes('mutate-type-desecrated') || mutateTypeText === 'desecrated') {
       optionGroup = 'desecrated';
     } else if (mutateTypeClass.includes('mutate-type-fractured') || mutateTypeText === 'fractured') {

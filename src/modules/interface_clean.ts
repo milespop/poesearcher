@@ -4,6 +4,7 @@
 import type { ParsedItem, ValidationResult } from './itemParser';
 import { createLogger } from './logger';
 import { validateEntireSiteStructure, type ComprehensiveSiteValidation } from './siteValidator';
+import type { StatMapping as StatMappingConfig } from './statMappings';
 
 // Type definitions for interface
 interface StorageResult {
@@ -13,6 +14,7 @@ interface StorageResult {
   delayProfile?: 'safe' | 'lightning';
   logLevel?: number;
   minimizeAfterSearch?: boolean;
+  includeItemCategory?: boolean;
   checkboxStates?: { [statKey: string]: boolean };
 }
 
@@ -37,6 +39,7 @@ export class POESearcherInterface {
   private _delayProfileHandler: ((e: Event) => void) | null = null;
   private _logLevelHandler: ((e: Event) => void) | null = null;
   private _minimizeHandler: ((e: Event) => void) | null = null;
+  private _includeCategoryHandler: ((e: Event) => void) | null = null;
   private _alertReportHandler: ((e: Event) => void) | null = null;
   private _alertCopyHandler: ((e: Event) => void) | null = null;
   private _alertDismissHandler: ((e: Event) => void) | null = null;
@@ -1161,7 +1164,15 @@ export class POESearcherInterface {
           </div>
 
           <div class="poe-setting-group" style="margin-top: 16px; padding-top: 0; border-bottom: none;">
-            <label class="poe-setting-label">Minimize after search:</label>
+            <label class="poe-setting-label">Include item category:</label>
+            <label class="poe-checkbox-container">
+              <input type="checkbox" id="poe-include-category-checkbox" class="poe-checkbox" checked>
+              <span class="poe-checkbox-custom"></span>
+            </label>
+          </div>
+
+          <div class="poe-setting-group" style="margin-top: 16px; padding-top: 0; border-bottom: none;">
+            <label class="poe-setting-label">Minimise after search:</label>
             <label class="poe-checkbox-container">
               <input type="checkbox" id="poe-minimize-checkbox" class="poe-checkbox" checked>
               <span class="poe-checkbox-custom"></span>
@@ -1379,6 +1390,10 @@ export class POESearcherInterface {
       const minimizeCheckbox = this.container!.querySelector<HTMLInputElement>('#poe-minimize-checkbox');
       if (minimizeCheckbox) minimizeCheckbox.removeEventListener('change', this._minimizeHandler);
     }
+    if (this._includeCategoryHandler) {
+      const includeCategoryCheckbox = this.container!.querySelector<HTMLInputElement>('#poe-include-category-checkbox');
+      if (includeCategoryCheckbox) includeCategoryCheckbox.removeEventListener('change', this._includeCategoryHandler);
+    }
 
     // Clear alert handlers too
     this.clearAlertHandlers();
@@ -1588,6 +1603,10 @@ export class POESearcherInterface {
           const minimizeCheckbox = this.container!.querySelector<HTMLInputElement>('#poe-minimize-checkbox');
           const shouldMinimize = minimizeCheckbox ? minimizeCheckbox.checked : true; // Default to true for backwards compatibility
 
+          // Check if include item category is enabled
+          const includeCategoryCheckbox = this.container!.querySelector<HTMLInputElement>('#poe-include-category-checkbox');
+          const includeItemCategory = includeCategoryCheckbox ? includeCategoryCheckbox.checked : true; // Default to true
+
           if (shouldMinimize) {
             setTimeout(() => {
               if (this.isExpanded) {
@@ -1596,7 +1615,7 @@ export class POESearcherInterface {
             }, 500); // Minimize during search execution
           }
 
-          const result = await (window as any).performSearch(filteredParsed, scalePercent);
+          const result = await (window as any).performSearch(filteredParsed, scalePercent, includeItemCategory);
 
           if (result.success) {
             this.logger.success('Search completed successfully!');
@@ -1650,6 +1669,39 @@ export class POESearcherInterface {
       };
 
       clearBtn.addEventListener('click', this._clearHandler as EventListener);
+    }
+
+    // Include item category checkbox
+    const includeCategoryCheckbox = this.container!.querySelector<HTMLInputElement>('#poe-include-category-checkbox');
+    if (includeCategoryCheckbox) {
+      this._includeCategoryHandler = (e: Event) => {
+        const target = e.target as HTMLInputElement;
+        const isEnabled = target.checked;
+
+        // Save preference
+        try {
+          chrome.storage.local.set({ includeItemCategory: isEnabled });
+        } catch (e) {
+          // Ignore chrome API errors
+        }
+      };
+
+      includeCategoryCheckbox.addEventListener('change', this._includeCategoryHandler);
+
+      // Load saved preference
+      try {
+        chrome.storage.local.get(['includeItemCategory'], (result: StorageResult) => {
+          // Default to true (enabled) if no saved preference
+          if (result.includeItemCategory !== undefined) {
+            includeCategoryCheckbox.checked = result.includeItemCategory;
+          } else {
+            includeCategoryCheckbox.checked = true; // Default enabled
+          }
+        });
+      } catch (e) {
+        // Ignore chrome API errors, keep default (enabled)
+        includeCategoryCheckbox.checked = true;
+      }
     }
 
     // Minimize after search checkbox
@@ -1795,8 +1847,8 @@ export class POESearcherInterface {
 
     // Process explicit stats
     parsed.stats.forEach(stat => {
-      const mapping = (window as any).findStatMapping(stat, parsed.itemClass) as StatMapping | null;
-      if (mapping) {
+      const mapping = (window as any).findStatMapping(stat, parsed.itemClass) as StatMappingConfig | null;
+      if (mapping && !mapping.unsupported) {
         mappedStats.push(stat);
       } else {
         unmappedStats.push(stat);
@@ -1805,8 +1857,8 @@ export class POESearcherInterface {
 
     // Process implicit stats
     parsed.implicitStats.forEach(stat => {
-      const mapping = (window as any).findStatMapping(stat, parsed.itemClass) as StatMapping | null;
-      if (mapping) {
+      const mapping = (window as any).findStatMapping(stat, parsed.itemClass) as StatMappingConfig | null;
+      if (mapping && !mapping.unsupported) {
         mappedImplicits.push(stat);
       } else {
         unmappedImplicits.push(stat);
@@ -1858,10 +1910,12 @@ export class POESearcherInterface {
 
       // Add unmapped implicit stats (red with unsupported label - will be skipped)
       unmappedImplicits.forEach((stat, index) => {
+        const mapping = (window as any).findStatMapping(stat) as StatMappingConfig | null;
+        const unsupportedText = mapping?.unsupported ? '(intentionally unsupported)' : '(unsupported)';
         content += `<div class="poe-stat-line unmapped implicit">
           <label class="poe-stat-checkbox-label">
             <input type="checkbox" class="poe-stat-checkbox" data-stat="${stat}" data-type="implicit" data-index="${index}" disabled>
-            <span class="poe-stat-text">${stat} (unsupported)</span>
+            <span class="poe-stat-text">${stat} ${unsupportedText}</span>
           </label>
         </div>`;
       });
@@ -1924,10 +1978,12 @@ export class POESearcherInterface {
 
       // Add unmapped stats (red with unsupported label - will be skipped)
       unmappedStats.forEach((stat, index) => {
+        const mapping = (window as any).findStatMapping(stat) as StatMappingConfig | null;
+        const unsupportedText = mapping?.unsupported ? '(intentionally unsupported)' : '(unsupported)';
         content += `<div class="poe-stat-line unmapped">
           <label class="poe-stat-checkbox-label">
             <input type="checkbox" class="poe-stat-checkbox" data-stat="${stat}" data-type="explicit" data-index="${index}" disabled>
-            <span class="poe-stat-text">${stat} (unsupported)</span>
+            <span class="poe-stat-text">${stat} ${unsupportedText}</span>
           </label>
         </div>`;
       });

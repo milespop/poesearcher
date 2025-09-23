@@ -18,7 +18,8 @@ describe('Integration Tests - Real Game Items', () => {
       'qs1.txt',
       'ring-duallightning.txt',
       'spear-throw.txt',
-      'staff1.txt'
+      'staff1.txt',
+      'two-hand-mace.txt'
     ];
 
     itemFiles.forEach(file => {
@@ -279,6 +280,52 @@ describe('Integration Tests - Real Game Items', () => {
 
       // All Focus stats should be mappable (this is a high-value item with standard stats)
       expect(unmappedStats.length).toBe(0);
+    });
+  });
+
+  describe('Two Hand Mace with Stun Buildup', () => {
+    it('should correctly map "Causes X% increased Stun Buildup" stat', () => {
+      const parsed = parseItem(itemTexts['two-hand-mace.txt']);
+
+      expect(parsed.itemClass).toBe('Two Hand Maces');
+      expect(parsed.rarity).toBe('Rare');
+      expect(parsed.name).toBe('Brimstone Smasher');
+      expect(parsed.baseType).toBe('Fanatic Greathammer');
+
+      // Check that the problematic stat is present
+      expect(parsed.stats).toContain('Causes 71% increased Stun Buildup');
+
+      // Verify the mapping is correct
+      const stunMapping = findStatMapping('Causes 71% increased Stun Buildup');
+      expect(stunMapping).toBeTruthy();
+      expect(stunMapping?.filterText).toBe('Causes #% increased Stun Buildup');
+      expect(stunMapping?.value).toBe(71);
+      expect(stunMapping?.group).toBe('explicit');
+
+      // Verify that it doesn't incorrectly map to the generic variant
+      const genericMapping = findStatMapping('71% increased Stun Buildup');
+      expect(genericMapping).toBeTruthy();
+      expect(genericMapping?.filterText).toBe('#% increased Stun Buildup');
+      expect(genericMapping?.filterText).not.toBe('Causes #% increased Stun Buildup');
+
+      // Verify other stats are mapped correctly
+      const allStats = [...parsed.implicitStats, ...parsed.stats];
+      const unmappedStats: string[] = [];
+
+      allStats.forEach(stat => {
+        const mapping = findStatMapping(stat);
+        if (!mapping || mapping.unsupported) {
+          unmappedStats.push(stat);
+        }
+      });
+
+      // Log unmapped stats for debugging
+      if (unmappedStats.length > 0) {
+        console.log('Unmapped stats in two-hand-mace:', unmappedStats);
+      }
+
+      // The Attribute Requirements stat should be intentionally unsupported
+      expect(unmappedStats).toContain('30% reduced Attribute Requirements');
     });
   });
 
